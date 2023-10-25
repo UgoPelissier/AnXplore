@@ -2,6 +2,8 @@ import meshio
 import numpy as np
 from typing import Union, List
 
+from utils.points import four_points_to_triangles, slice_tetra
+
 def triangle_area(
         triangle: np.ndarray
 )-> float:
@@ -15,7 +17,7 @@ def triangle_area(
     return np.sqrt(s*(s-a)*(s-b)*(s-c))
 
 def surface_area(
-        mesh: meshio.Mesh,
+        points: np.ndarray,
         cells: np.ndarray
 )-> float:
     """
@@ -23,7 +25,7 @@ def surface_area(
     """
     surface_area = 0
     for cell in cells:
-        surface_area += triangle_area(mesh.points[cell])
+        surface_area += triangle_area(points[cell])
     return surface_area
 
 def extract_surface_cells(
@@ -78,3 +80,44 @@ def WSS_regions_cells(
     WSS_low_cells = np.array(WSS_low_cells)
     WSS_high_cells = np.array(WSS_high_cells)
     return WSS_low_cells, WSS_high_cells
+
+def slice_triangles(
+        mesh: meshio.Mesh,
+        origin: Union[List[float], np.ndarray],
+        normal: Union[List[float], np.ndarray]
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """
+    Return the triangles cut by a plane.
+    """
+    tetra = slice_tetra(mesh, origin, normal)
+
+    slice_triangles = []
+    slice_indicator = np.zeros(len(mesh.points))
+    for tet in tetra:
+        triangles = four_points_to_triangles(tet)
+        for triangle in triangles:
+            dot_product = []
+            for point in triangle:
+                dot_product.append(np.dot(mesh.points[point]-origin, normal))
+            signed_dot_product = np.sign(dot_product)
+            if (abs(np.sum(signed_dot_product)) != 3):
+                slice_triangles.append(triangle)
+                for point in triangle:
+                    slice_indicator[point] = 1
+    slice_triangles = np.array(slice_triangles)
+    sliced_points = np.where(slice_indicator == 1)[0]
+    return slice_triangles, slice_indicator, sliced_points
+
+def positive_v_y_cells(
+        mesh: meshio.Mesh,
+        indicator: np.ndarray
+) -> np.ndarray:
+    """
+    Return the cells with a positive y component of the velocity.
+    """
+    positive_v_y_cells = []
+    for cell in mesh.cells[0].data:
+        if (mesh.point_data['Vitesse'][cell[0]][1] > 0 and mesh.point_data['Vitesse'][cell[1]][1] > 0 and mesh.point_data['Vitesse'][cell[2]][1] > 0):
+            positive_v_y_cells.append(cell)
+    positive_v_y_cells = np.array(positive_v_y_cells)
+    return positive_v_y_cells
