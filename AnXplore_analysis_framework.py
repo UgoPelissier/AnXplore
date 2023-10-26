@@ -142,5 +142,3 @@ if __name__ == '__main__':
         point_data = {"WSS":  mesh.point_data['WSS'], "aneurysm": aneurysm_indicator, "regions": regions}
     )
     meshio.write(osp.join(data_dir, f"{filename[:-4]}_surface.vtu"), mesh_surface)
-
-    
