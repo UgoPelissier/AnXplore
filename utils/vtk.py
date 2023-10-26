@@ -94,3 +94,49 @@ class VTU_Wrapper(object):
         meshio.write(osp.join(data_dir, filename), surface)
 
         return surface, cut_area
+    
+    def compute_vector_derivatives(
+            self,
+            field: str
+    ) -> np.ndarray:
+        """
+        Compute the derivatives of a vector field.
+        """
+        cell_derivatives = vtk.vtkCellDerivatives()
+        cell_derivatives.SetInputData(self.vtu_data.GetOutput())
+        cell_derivatives.SetTensorModeToComputeGradient()
+        cell_derivatives.SetVectorModeToPassVectors()
+        self.vtu_data.GetOutput().GetPointData().SetActiveVectors(field)
+        cell_derivatives.Update()
+        vector_gradient = vtk_to_numpy(cell_derivatives.GetOutput().GetCellData().GetArray("VectorGradient")).reshape(-1, 3, 3)
+
+        converter = vtk.vtkCellDataToPointData()
+        converter.ProcessAllArraysOn()
+        converter.SetInputConnection(cell_derivatives.GetOutputPort())
+        converter.Update()
+        vector_gradient = vtk_to_numpy(converter.GetOutput().GetPointData().GetArray("VectorGradient")).reshape(-1, 3, 3)
+
+        return vector_gradient
+
+    def compute_strain_rate(
+            self
+    ) -> np.ndarray:
+        """
+        Compute the strain rate tensor.
+        """
+        grad_u = self.compute_vector_derivatives(field="Vitesse")
+        strain_rate = 2*abs(grad_u + grad_u.transpose(0, 2, 1))
+        strain_rate = np.array([np.sum(strain_rate[i,:,:]) for i in range(len(strain_rate))])
+        return strain_rate
+    
+    def compute_viscous_dissipation(
+            self
+    ) -> np.ndarray:
+        """
+        Compute the viscous dissipation.
+        """
+        strain_rate = self.compute_strain_rate()
+        mu = self.vtu_data.GetOutput().GetPointData().GetArray("mu")
+        mu = vtk_to_numpy(mu)
+        viscous_dissipation = mu*strain_rate
+        return viscous_dissipation

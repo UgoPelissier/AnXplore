@@ -107,22 +107,3 @@ def WSS_regions(
     regions[WSS_high] = 1
     regions[WSS_low] = -1
     return WSS_low, WSS_high, regions
-
-def slice_tetra(
-        mesh: meshio.Mesh,
-        origin: Union[List[float], np.ndarray],
-        normal: Union[List[float], np.ndarray]
-) -> np.ndarray:
-    """
-    Return the cells cut by a plane.
-    """
-    slice_tetra = []
-    for cell in mesh.cells[0].data:
-        dot_product = []
-        for point in cell:
-            dot_product.append(np.dot(mesh.points[point]-origin, normal))
-        signed_dot_product = np.sign(dot_product)
-        if (abs(np.sum(signed_dot_product)) != 4):
-            slice_tetra.append(cell)
-    slice_tetra = np.array(slice_tetra)
-    return slice_tetra
