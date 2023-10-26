@@ -56,7 +56,7 @@ def split_vessels_aneurysm(
         normal: Union[List[float], np.ndarray]
 )-> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
-    Split points : aneurysm volume and vessels volume.
+    Split points: aneurysm volume and vessels volume.
     """
     vessels = []
     aneurysm = []
