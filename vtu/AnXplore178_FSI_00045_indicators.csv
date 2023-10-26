@@ -1,0 +1,2 @@
+min_wss max_wss min_wss_aneurysm max_wss_aneurysm min_wss_vessels max_wss_vessels mean_wss std_wss mean_wss_aneurysm std_wss_aneurysm mean_wss_vessels std_wss_vessels mean_osi_aneurysm max_osi_aneurysm, KER, VDR, LSA, HSA, SCI, ICI
+0.23136 16.85640 0.23136 16.85640 0.90343 13.47936 4.29829 2.20392 1.79866 2.78861 4.81952 1.63524 0.00599 0.21939 0.14143 0.57125 0.80866 0.03669 7.18266 0.20606
