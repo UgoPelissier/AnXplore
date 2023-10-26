@@ -110,7 +110,6 @@ def slice_triangles(
 
 def positive_v_y_cells(
         mesh: meshio.Mesh,
-        indicator: np.ndarray
 ) -> np.ndarray:
     """
     Return the cells with a positive y component of the velocity.

@@ -3,15 +3,14 @@ import numpy as np
 from typing import Union, List
 from utils.cells import triangle_area
 
-def integrate(
+def integrate_field_surface(
+        cells: np.ndarray,
         points: np.ndarray,
-        field: np.ndarray,
-        surface_cells: np.ndarray
+        data: np.ndarray,
 ) -> float:
-    """
-    Integrate a field over a surface.
-    """
+    """ Integrate scalar p1 field over a surface. """
     integral = 0
-    for cell in surface_cells:
-        integral += triangle_area(points[cell]) * (field[cell[0]] + field[cell[1]] + field[cell[2]]) / 3
+    for triangle in cells:
+        integral += (data[triangle[0]] + data[triangle[1]] + data[triangle[2]])/3 * triangle_area(points[triangle])
+    
     return integral

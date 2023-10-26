@@ -1,18 +1,18 @@
-import vtk
+import os.path as osp
+from typing import Union, List, Optional
 import numpy as np
-from typing import Union, List
-
+import meshio
+import vtk
 from vtk.util.numpy_support import vtk_to_numpy
 from matplotlib import tri
 from alive_progress import alive_bar
-import meshio
-import os.path as osp
+
+from utils.cells import triangle_area
+
 
 class VTU_Wrapper(object):
     """
-        Class used to read vtu files and performing cuts.
-        The plane surfaces created by the cuts can be also
-
+    Wrapper for the vtkXMLUnstructuredGridReader class.
     """
 
     def __init__(self, filename: str) -> None:
@@ -31,8 +31,10 @@ class VTU_Wrapper(object):
         self,
         center: Union[List[float], np.ndarray],
         normal: Union[List[float], np.ndarray],
-        field: str
-    ) -> tuple[np.ndarray, np.ndarray, float]:
+        field: str,
+        data_dir: str,
+        filename: str
+    ) -> tuple[meshio.Mesh, float]:
         """
         Get slice of data from using a normal and an center for the slice.
 
@@ -81,28 +83,14 @@ class VTU_Wrapper(object):
         self.cut = cut
 
         coord, idx = np.unique(coord, return_index=True, axis=0)
+        data = data[idx]
 
-        return coord, data[idx], cut_area
+        dt = tri.Triangulation(coord[:,0], coord[:,2])
+        surface = meshio.Mesh(
+            points=coord,
+            cells=[("triangle", dt.triangles)],
+            point_data={field: data}
+        )
+        meshio.write(osp.join(data_dir, filename), surface)
 
-# -------------------------------------------------------------------------------
-# -------------------------------------------------------------------------------
-
-
-def integrate_vtk_surface(
-        data_dir: str,
-        filename: str,
-        coord: np.ndarray,
-        data: np.ndarray,
-        field: str
-) -> float:
-    """ Integrate scalar p1 field over a surface. """
-    dt = tri.Triangulation(coord[:,0], coord[:,2])
-
-    surface = meshio.Mesh(
-        points=coord,
-        cells=[("triangle", dt.triangles)],
-        point_data={field: data}
-    )
-    meshio.write(osp.join(data_dir, f"{filename[:-4]}_orifice.vtu"), surface)
-
-    
+        return surface, cut_area
