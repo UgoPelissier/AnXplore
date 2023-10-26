@@ -1,3 +1,5 @@
+
+import os
 import os.path as osp
 from typing import Union, List, Optional
 import numpy as np
@@ -7,7 +9,20 @@ from vtk.util.numpy_support import vtk_to_numpy
 from matplotlib import tri
 from alive_progress import alive_bar
 
-from utils.cells import triangle_area
+def decompress_h5(
+        data_dir: str,
+        filename: str
+) -> None:
+    # read the xdmf file
+    os.makedirs(osp.join(data_dir, "vtu"), exist_ok=True)
+    with meshio.xdmf.TimeSeriesReader(osp.join(data_dir, filename)) as reader:
+        p, c = reader.read_points_cells()
+        with alive_bar(reader.num_steps, title="Decompressing h5...") as bar:
+            for t in range(reader.num_steps):
+                _, P1, P0 = reader.read_data(t)
+                mesh = meshio.Mesh(p,c,point_data=P1, cell_data=P0)
+                mesh.write(osp.join(data_dir, "vtu", filename.split('.')[0]+"_{:05d}.vtu".format(t)))
+                bar()
 
 
 class VTU_Wrapper(object):
