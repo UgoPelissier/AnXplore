@@ -7,7 +7,7 @@ from utils.cells import surface_area, extract_surface_cells, aneurysm_cells, WSS
 from utils.integrate import integrate_field_surface, integrate_field_volume
 from utils.vtk import VTU_Wrapper
 
-data_dir = "data/"
+data_dir = "vtu/"
 filename = "AnXplore178_FSI_00045.vtu"
 
 vessel_in_out_origin = [0.0, 0.001, 0.0]
@@ -142,3 +142,12 @@ if __name__ == '__main__':
         point_data = {"WSS":  mesh.point_data['WSS'], "aneurysm": aneurysm_indicator, "regions": regions}
     )
     meshio.write(osp.join(data_dir, f"{filename[:-4]}_surface.vtu"), mesh_surface)
+
+    # Save indicators to csv file
+    indicators = np.array([[min_wss, max_wss, min_wss_aneurysm, max_wss_aneurysm, min_wss_vessels, max_wss_vessels, mean_wss, std_wss, mean_wss_aneurysm, std_wss_aneurysm, mean_wss_vessels, std_wss_vessels, mean_osi_aneurysm, max_osi_aneurysm, KER, VDR, LSA, HSA, SCI, ICI]])
+    np.savetxt(
+        fname=osp.join(data_dir, f"{filename[:-4]}_indicators.csv"),
+        X=indicators,
+        fmt="%.5f",
+        header="min_wss max_wss min_wss_aneurysm max_wss_aneurysm min_wss_vessels max_wss_vessels mean_wss std_wss mean_wss_aneurysm std_wss_aneurysm mean_wss_vessels std_wss_vessels mean_osi_aneurysm max_osi_aneurysm, KER, VDR, LSA, HSA, SCI, ICI",
+        comments='')
