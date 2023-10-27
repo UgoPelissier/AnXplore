@@ -42,7 +42,7 @@ if __name__ == '__main__':
         fname=osp.join(data_dir, "csv", f"{filename[:-4]}_indicators.csv"),
         X=np.array(indicators),
         fmt="%.5f",
-        header="min_wss max_wss min_wss_aneurysm max_wss_aneurysm min_wss_vessels max_wss_vessels mean_wss std_wss mean_wss_aneurysm std_wss_aneurysm mean_wss_vessels std_wss_vessels mean_osi_aneurysm max_osi_aneurysm, KER, VDR, LSA, HSA, SCI, ICI",
+        header="min_wss max_wss min_wss_aneurysm max_wss_aneurysm min_wss_vessels max_wss_vessels mean_wss std_wss mean_wss_aneurysm std_wss_aneurysm mean_wss_vessels std_wss_vessels mean_osi_aneurysm max_osi_aneurysm KER VDR LSA HSA SCI ICI",
         comments='')
     
     os.system(f"rm -rf {vtu_dir}")
