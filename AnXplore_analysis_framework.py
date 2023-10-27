@@ -18,7 +18,7 @@ if __name__ == '__main__':
     orifice_origin = [0.0, 5.3, 0.0]
     orifice_plane = [0.0, 1.0, 0.0]
 
-    T_cardiac_cycle = 3
+    T_cardiac_cycle = 20
 
     decompress_h5(data_dir, filename)
 
