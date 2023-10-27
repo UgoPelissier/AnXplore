@@ -8,7 +8,7 @@ from utils.indicators import compute_indicators
 
 if __name__ == '__main__':
 
-    data_dir = "data/"
+    data_dir = "data"
     vtu_dir = osp.join(data_dir, "vtu")
     filename = "AnXplore178_FSI.xdmf"
 
@@ -20,14 +20,14 @@ if __name__ == '__main__':
 
     T_cardiac_cycle = 3
 
-    decompress_h5(data_dir, filename)
+    # decompress_h5(data_dir, filename)
 
     os.makedirs(osp.join(data_dir, "csv"), exist_ok=True)
     indicators = []
-    cardiac_cycle = sorted(vtu_dir)[-T_cardiac_cycle:]
+    cardiac_cycle = sorted(os.listdir(vtu_dir))[-T_cardiac_cycle:]
     with alive_bar(len(cardiac_cycle), title="Computing indicators over a cardiac cycle...") as bar:
         for time_step in cardiac_cycle:
-            indicators.append(compute_indicators(data_dir, time_step, vessel_in_out_origin, vessel_in_out_plane, orifice_origin, orifice_plane))
+            indicators.append(compute_indicators(vtu_dir, time_step, vessel_in_out_origin, vessel_in_out_plane, orifice_origin, orifice_plane))
             bar()
 
     np.savetxt(
