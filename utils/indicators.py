@@ -16,6 +16,9 @@ def compute_redundant_first(
         orifice_origin: list[float],
         orifice_plane: list[float]
 ) -> tuple:
+    """
+    Compute the first redundant of the indicators.
+    """
     vessels, aneurysm, aneurysm_indicator = split_vessels_aneurysm(mesh, orifice_origin, orifice_plane)
     aneurysm_surface_points = extract_surface_points(mesh.point_data['WSS'], aneurysm)
     aneurysm_tetra, vessels_tetra, _ = slice_tetra(mesh, orifice_origin, orifice_plane)
@@ -33,6 +36,9 @@ def compute_redundant_second(
         mean_wss_vessels: float,
         std_wss_vessels: float
 ) -> tuple:
+    """
+    Compute the second redundant of the indicators.
+    """
     _, _, regions = WSS_regions(aneurysm_surface_points, mesh.point_data['WSS'], mean_wss_vessels, std_wss_vessels)
     WSS_low_cells, WSS_high_cells = WSS_regions_cells(surface_cells, regions)
     return WSS_low_cells, WSS_high_cells
@@ -42,6 +48,8 @@ def wss(
         vessels: np.ndarray,
         aneurysm_surface_points: np.ndarray
 ) -> tuple[float]:
+    """
+    Compute the min, max, mean and std WSS values in the aneurysm and vessels."""
     # Split and extract surface points and print the minimum and maximum WSS values
     surface_points = extract_surface_points(mesh.point_data['WSS'], np.array(range(len(mesh.points))))
     vessels_surface_points = extract_surface_points(mesh.point_data['WSS'], vessels)
@@ -60,6 +68,9 @@ def osi(
         mesh: meshio.Mesh,
         aneurysm_surface_points: np.ndarray
 ) -> tuple[float]:
+    """
+    Compute the min, max, mean and std OSI values in the aneurysm.
+    """
     min_osi_aneurysm, max_osi_aneurysm = min_max(mesh.point_data['OSI'][aneurysm_surface_points])
     mean_osi_aneurysm, std_osi_aneurysm = mean_std(mesh.point_data['OSI'][aneurysm_surface_points])
     return min_osi_aneurysm, max_osi_aneurysm, mean_osi_aneurysm, std_osi_aneurysm
