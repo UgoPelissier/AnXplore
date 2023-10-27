@@ -2,9 +2,8 @@ import os
 import os.path as osp
 import meshio
 import numpy as np
-from alive_progress import alive_bar
 
-from utils.vtk import decompress_h5, VTU_Wrapper
+from utils.vtk import VTU_Wrapper
 from utils.points import min_max, mean_std, split_vessels_aneurysm, extract_surface_points, WSS_regions
 from utils.triangles import surface_area, extract_surface_cells, aneurysm_cells, WSS_regions_cells, positive_v_y_cells
 from utils.tetra import slice_tetra, volume_region
@@ -42,7 +41,7 @@ def osi(
     mean_osi_aneurysm, std_osi_aneurysm = mean_std(mesh.point_data['OSI'][aneurysm_surface_points])
     return min_osi_aneurysm, max_osi_aneurysm, mean_osi_aneurysm, std_osi_aneurysm
 
-def KER(
+def compute_KER(
         mesh: meshio.Mesh,
         orifice_origin: list[float],
         orifice_plane: list[float]
@@ -59,7 +58,7 @@ def KER(
 
     return KER
 
-def VDR(
+def compute_VDR(
         vtu_dir: str,
         filename: str,
         mesh: meshio.Mesh,
@@ -68,7 +67,7 @@ def VDR(
 ) -> float:
     aneurysm_tetra, vessels_tetra, _ = slice_tetra(mesh, orifice_origin, orifice_plane)
 
-    vtu_file = VTU_Wrapper(os.join(vtu_dir, filename))
+    vtu_file = VTU_Wrapper(osp.join(vtu_dir, filename))
     viscous_dissipation = vtu_file.compute_viscous_dissipation()
 
     phi_a = integrate_field_volume(aneurysm_tetra, mesh.points, viscous_dissipation)
@@ -81,7 +80,7 @@ def VDR(
 
     return VDR
 
-def LSA(
+def compute_LSA(
         mesh: meshio.Mesh,
         orifice_origin: list[float],
         orifice_plane: list[float]
@@ -108,7 +107,7 @@ def LSA(
 
     return LSA, HSA
 
-def SCI(
+def compute_SCI(
         mesh: meshio.Mesh,
         orifice_origin: list[float],
         orifice_plane: list[float]
@@ -125,14 +124,14 @@ def SCI(
     _, _, regions = WSS_regions(aneurysm_surface_points, mesh.point_data['WSS'], mean_wss_vessels, std_wss_vessels)
     _, WSS_high_cells = WSS_regions_cells(surface_cells, regions)
 
-    _, HSA = LSA(mesh, orifice_origin, orifice_plane)
+    _, HSA = compute_LSA(mesh, orifice_origin, orifice_plane)
 
     F_a = integrate_field_surface(aneurysm_surface_cells, mesh.points, mesh.point_data['WSS'])    
     F_h = integrate_field_surface(WSS_high_cells, mesh.points, mesh.point_data['WSS'])
     SCI = (F_h/F_a)/HSA
     return SCI
 
-def ICI(
+def compute_ICI(
         vtu_dir: str,
         filename: str,
         vessel_in_out_origin: list[float],
@@ -141,7 +140,7 @@ def ICI(
         orifice_plane: list[float]
 ) -> float: 
 
-    vtu_file = VTU_Wrapper(os.join(vtu_dir, filename))
+    vtu_file = VTU_Wrapper(osp.join(vtu_dir, filename))
 
     vessel_in_out, _ = vtu_file.get_slice_data(vessel_in_out_origin, vessel_in_out_plane, "Vitesse", vtu_dir, f"{filename[:-4]}_vessel_in_out.vtu")
     pos_v_y_vessel_in_out_cells = positive_v_y_cells(vessel_in_out)
@@ -175,10 +174,10 @@ def compute_indicators(
     # Compute indicators
     min_wss, max_wss, min_wss_aneurysm, max_wss_aneurysm, min_wss_vessels, max_wss_vessels, mean_wss, std_wss, mean_wss_aneurysm, std_wss_aneurysm, mean_wss_vessels, std_wss_vessels = wss(mesh, orifice_origin, orifice_plane)
     _, max_osi_aneurysm, mean_osi_aneurysm, _ = osi(mesh, orifice_origin, orifice_plane)
-    KER = KER(mesh, orifice_origin, orifice_plane)
-    VDR = VDR(vtu_dir, filename, mesh, orifice_origin, orifice_plane)
-    LSA, HSA = LSA(mesh, orifice_origin, orifice_plane)
-    SCI = SCI(mesh, orifice_origin, orifice_plane)
-    ICI = ICI(vtu_dir, filename, vessel_in_out_origin, vessel_in_out_plane, orifice_origin, orifice_plane)
+    KER = compute_KER(mesh, orifice_origin, orifice_plane)
+    VDR = compute_VDR(vtu_dir, filename, mesh, orifice_origin, orifice_plane)
+    LSA, HSA = compute_LSA(mesh, orifice_origin, orifice_plane)
+    SCI = compute_SCI(mesh, orifice_origin, orifice_plane)
+    ICI = compute_ICI(vtu_dir, filename, vessel_in_out_origin, vessel_in_out_plane, orifice_origin, orifice_plane)
 
     return [min_wss, max_wss, min_wss_aneurysm, max_wss_aneurysm, min_wss_vessels, max_wss_vessels, mean_wss, std_wss, mean_wss_aneurysm, std_wss_aneurysm, mean_wss_vessels, std_wss_vessels, mean_osi_aneurysm, max_osi_aneurysm, KER, VDR, LSA, HSA, SCI, ICI]

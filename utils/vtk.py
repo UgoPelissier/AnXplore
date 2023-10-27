@@ -1,7 +1,7 @@
 
 import os
 import os.path as osp
-from typing import Union, List, Optional
+from typing import Union, List
 import numpy as np
 import meshio
 import vtk
