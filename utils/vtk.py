@@ -106,7 +106,6 @@ class VTU_Wrapper(object):
             cells=[("triangle", dt.triangles)],
             point_data={field: data}
         )
-        meshio.write(osp.join(data_dir, filename), surface)
 
         return surface, cut_area
     

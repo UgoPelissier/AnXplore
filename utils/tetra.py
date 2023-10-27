@@ -26,7 +26,7 @@ def slice_tetra(
         mesh: meshio.Mesh,
         origin: Union[List[float], np.ndarray],
         normal: Union[List[float], np.ndarray]
-) -> np.ndarray:
+) -> tuple[np.ndarray]:
     """
     Return the cells cut by a plane.
     """
