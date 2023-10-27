@@ -23,6 +23,7 @@ def decompress_h5(
                 mesh = meshio.Mesh(p,c,point_data=P1, cell_data=P0)
                 mesh.write(osp.join(data_dir, "vtu", filename.split('.')[0]+"_{:05d}.vtu".format(t)))
                 bar()
+    print("Done.")
 
 
 class VTU_Wrapper(object):
