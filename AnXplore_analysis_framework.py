@@ -29,6 +29,7 @@ if __name__ == '__main__':
         for time_step in cardiac_cycle:
             indicators.append(compute_indicators(vtu_dir, time_step, vessel_in_out_origin, vessel_in_out_plane, orifice_origin, orifice_plane))
             bar()
+    print("Done.")
 
     # Compute min, max and mean over the cardiac cycle
     indicators = np.array(indicators)
