@@ -23,3 +23,17 @@ def integrate_field_volume(
     for tetra in cells:
         integral += (data[tetra[0]] + data[tetra[1]] + data[tetra[2]] + data[tetra[3]])/4 * tetra_volume(points[tetra])
     return integral
+
+def integrate_fields_volume(
+        cells: np.ndarray,
+        points: np.ndarray,
+        data: list[np.ndarray]
+) -> list[float]:
+    """
+    Integrate scalar p1 fields over a volume.
+    """
+    integral = [0 for _ in range(len(data))]
+    for tetra in cells:
+        for i in range(len(data)):
+            integral[i] += (data[i][tetra[0]] + data[i][tetra[1]] + data[i][tetra[2]] + data[i][tetra[3]])/4 * tetra_volume(points[tetra])
+    return integral
