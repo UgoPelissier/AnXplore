@@ -1,5 +1,6 @@
 import numpy as np
-from utils.cells import triangle_area, tetra_volume
+from utils.triangles import triangle_area
+from utils.tetra import tetra_volume
 
 def integrate_field_surface(
         cells: np.ndarray,
