@@ -1,79 +1,76 @@
 
-import os
-import os.path as osp
 from typing import Union, List
 import numpy as np
 import meshio
 import vtk
 from vtk.util.numpy_support import vtk_to_numpy
 from matplotlib import tri
-from alive_progress import alive_bar
 
-def decompress_h5(
-        data_dir: str,
-        filename: str
-) -> None:
-    # read the xdmf file
-    os.makedirs(osp.join(data_dir, "vtu"), exist_ok=True)
-    with meshio.xdmf.TimeSeriesReader(osp.join(data_dir, filename)) as reader:
-        p, c = reader.read_points_cells()
-        with alive_bar(reader.num_steps, title="Decompressing h5...") as bar:
-            for t in range(reader.num_steps):
-                _, P1, P0 = reader.read_data(t)
-                mesh = meshio.Mesh(p,c,point_data=P1, cell_data=P0)
-                mesh.write(osp.join(data_dir, "vtu", filename.split('.')[0]+"_{:05d}.vtu".format(t)))
-                bar()
-    print("Done.")
-
-
-class VTU_Wrapper(object):
+class XDMF_Wrapper(object):
     """
     Wrapper for the vtkXMLUnstructuredGridReader class.
     """
 
     def __init__(self, filename: str) -> None:
-
-        if not (filename.endswith(".vtu") or filename.endswith(".vtk")):
-            filename += ".vtu"
-
-        vtu_data = vtk.vtkXMLUnstructuredGridReader()
-        vtu_data.SetFileName(filename)
-        vtu_data.Update()
+        xdmf_data = vtk.vtkXdmfReader()
+        xdmf_data.SetFileName(filename)
+        xdmf_data.Update()
 
         self.filename = filename
-        self.vtu_data = vtu_data
+        self.xdmf_data = xdmf_data
+        self.tetra_id = 10
+
+    def get_points(self) -> np.ndarray:
+        """
+        Get the points of the mesh.
+        """
+        return vtk_to_numpy(self.xdmf_data.GetOutput().GetBlock(0).GetPoints().GetData())
+
+    def get_cells(self) -> np.ndarray:
+        """
+        Get the cells of the mesh.
+        """
+        data = vtk_to_numpy(self.xdmf_data.GetOutput().GetBlock(0).GetCells().GetData())
+        offsets = vtk_to_numpy(self.xdmf_data.GetOutput().GetBlock(0).GetCellLocationsArray())
+
+        cells = data.reshape((-1, 4))
+        cells = cells[:len(offsets)-1, :]
+        return cells
+
+    def get_time_steps(self):
+        """
+        Get the number of time steps.
+        """
+        return self.xdmf_data.GetOutputInformation(0).Get(vtk.vtkCompositeDataPipeline.TIME_STEPS())
+    
+    def get_point_field(self, field: str) -> np.ndarray:
+        """
+        Get the field of the points.
+        """
+        return vtk_to_numpy(self.xdmf_data.GetOutput().GetBlock(0).GetPointData().GetArray(field))
+
+    def update_time_step(self, time_step: float) -> None:
+        """
+        Update the time step.
+        """
+        self.xdmf_data.UpdateTimeStep(time_step)
 
     def get_slice_data(
         self,
         center: Union[List[float], np.ndarray],
         normal: Union[List[float], np.ndarray],
         field: str,
-        data_dir: str,
-        filename: str
     ) -> tuple[meshio.Mesh, float]:
         """
         Get slice of data from using a normal and an center for the slice.
-
-        Input:
-            center : List, tuple or nparray [x0, y0, z0]
-            normal : List, tuple or nparray [nx, ny, nz]
-
-        Output:
-            coord : Numpy array of the coordinates.
-                        x=coord[:,0]
-                        y=coord[:,1]
-                        z=coord[:,2]
-
-            data : Numpy array of the coordinates.
         """
-
         plane = vtk.vtkPlane()
         plane.SetOrigin(*center)
         plane.SetNormal(*normal)
 
         cutter = vtk.vtkCutter()
         cutter.SetCutFunction(plane)
-        cutter.SetInputConnection(self.vtu_data.GetOutputPort())
+        cutter.SetInputData(self.xdmf_data.GetOutput().GetBlock(0))
         cutter.Update()
 
         cut = cutter.GetOutput()
@@ -118,10 +115,10 @@ class VTU_Wrapper(object):
         Compute the derivatives of a vector field.
         """
         cell_derivatives = vtk.vtkCellDerivatives()
-        cell_derivatives.SetInputData(self.vtu_data.GetOutput())
+        cell_derivatives.SetInputData(self.xdmf_data.GetOutput().GetBlock(0))
         cell_derivatives.SetTensorModeToComputeGradient()
         cell_derivatives.SetVectorModeToPassVectors()
-        self.vtu_data.GetOutput().GetPointData().SetActiveVectors(field)
+        self.xdmf_data.GetOutput().GetBlock(0).GetPointData().SetActiveVectors(field)
         cell_derivatives.Update()
         vector_gradient = vtk_to_numpy(cell_derivatives.GetOutput().GetCellData().GetArray("VectorGradient")).reshape(-1, 3, 3)
 
@@ -151,7 +148,7 @@ class VTU_Wrapper(object):
         Compute the viscous dissipation.
         """
         strain_rate = self.compute_strain_rate()
-        mu = self.vtu_data.GetOutput().GetPointData().GetArray("mu")
+        mu = self.xdmf_data.GetOutput().GetBlock(0).GetPointData().GetArray("mu")
         mu = vtk_to_numpy(mu)
         viscous_dissipation = mu*strain_rate
         return viscous_dissipation

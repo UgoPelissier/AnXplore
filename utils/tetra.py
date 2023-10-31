@@ -23,29 +23,12 @@ def volume_region(
     return volume
 
 def slice_tetra(
-        mesh: meshio.Mesh,
+        points: np.ndarray,
+        cells: np.ndarray,
         origin: Union[List[float], np.ndarray],
         normal: Union[List[float], np.ndarray]
 ) -> tuple[np.ndarray]:
     """
     Return the cells cut by a plane.
     """
-    slice_up = []
-    slice_down = []
-    slice_tetra = []
-    for cell in mesh.cells[0].data:
-        dot_product = []
-        for point in cell:
-            dot_product.append(np.dot(mesh.points[point]-origin, normal))
-        signed_dot_product = np.sign(dot_product)
-        s = np.sum(signed_dot_product)
-        if (s == 4):
-            slice_up.append(cell)
-        elif (s == -4):
-            slice_down.append(cell)
-        else:
-            slice_tetra.append(cell)
-    slice_up = np.array(slice_up)
-    slice_down = np.array(slice_down)
-    slice_tetra = np.array(slice_tetra)
-    return slice_up, slice_down, slice_tetra
+    return cells[np.nonzero(1*(np.sum(1*(np.dot(points-origin, normal)>0)[cells], axis=1)==4))[0]], cells[np.nonzero(1*(np.sum(1*(np.dot(points-origin, normal)>0)[cells], axis=1)==0))[0]]

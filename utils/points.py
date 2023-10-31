@@ -1,4 +1,3 @@
-import meshio
 import numpy as np
 from typing import Union, List
 
@@ -51,23 +50,16 @@ def project_point_on_plane(
     return point - np.dot(point-origin, normal) * normal
 
 def split_vessels_aneurysm(
-        mesh: meshio.Mesh,
+        points: np.ndarray,
         origin: Union[List[float], np.ndarray],
         normal: Union[List[float], np.ndarray]
 )-> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
     Split points: aneurysm volume and vessels volume.
     """
-    vessels = []
-    aneurysm = []
-    for i, point in enumerate(mesh.points):
-        if np.dot(point-origin, normal) > 0:
-            aneurysm.append(i)
-        else:
-            vessels.append(i)
-    vessels = np.array(vessels)
-    aneurysm = np.array(aneurysm)
-    aneurysm_inidcator = np.zeros(len(mesh.points))
+    vessels = np.nonzero(1-1*(np.dot(points-origin, normal)>0))[0]
+    aneurysm = np.nonzero(1*(np.dot(points-origin, normal)>0))[0]
+    aneurysm_inidcator = np.zeros(len(points))
     aneurysm_inidcator[aneurysm] = 1
     return vessels, aneurysm, aneurysm_inidcator
 
@@ -78,32 +70,16 @@ def extract_surface_points(
     """
     Extract the points of a volume belonging to the surface.
     """
-    surface = []
-    for i in volume:
-        if (indicator[i] > 1e-10):
-            surface.append(i)
-    surface = np.array(surface)
-    return surface
+    return volume[(np.nonzero(1*(indicator[volume]>1e-10)))[0]]
 
 def WSS_regions(
-        aneurysm_surface: np.ndarray,
         wss: np.ndarray,
         mean_wss_vessels: float,
         std_wss_vessels: float
-) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+) -> np.ndarray:
     """
-    Compute the WSS regions of the aneurysm as point data.
+    Compute the WSS regions.
     """
-    WSS_low = []
-    WSS_high = []
-    for i in aneurysm_surface:
-        if (wss[i] > mean_wss_vessels + std_wss_vessels):
-            WSS_high.append(i)
-        elif (wss[i] < mean_wss_vessels - std_wss_vessels):
-            WSS_low.append(i)
-    WSS_low = np.array(WSS_low)
-    WSS_high = np.array(WSS_high)
-    regions = np.zeros(len(wss))
-    regions[WSS_high] = 1
-    regions[WSS_low] = -1
-    return WSS_low, WSS_high, regions
+    low = 1*(wss<mean_wss_vessels-std_wss_vessels)
+    high = 1*(wss>mean_wss_vessels+std_wss_vessels)
+    return high-low

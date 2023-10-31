@@ -26,21 +26,14 @@ def surface_area(
     return surface_area
 
 def extract_surface_cells(
-        mesh: meshio.Mesh
+        cells: np.ndarray,
+        wss: np.ndarray
 ) -> np.ndarray:
     """
     Extract the surface cells of a mesh.
     """
-    surface_cells = []
-    for cell in mesh.cells[0].data:
-        triangle = []
-        for point in cell:
-            if (mesh.point_data['TAWSS'][point] > 1e-10):
-                triangle.append(point)
-        if (len(triangle) == 3):
-            surface_cells.append(triangle)
-    surface_cells = np.array(surface_cells)
-    return surface_cells
+    x, y = np.nonzero(1*wss[cells[np.nonzero(np.sum(wss[cells]>0, axis=1)==3)[0]]]>0)
+    return cells[np.nonzero(np.sum(wss[cells]>0, axis=1)==3)[0]][x,y].reshape(-1,3)
 
 def aneurysm_cells(
         surface_cells: np.ndarray,
@@ -49,16 +42,7 @@ def aneurysm_cells(
     """
     Return cells belonging to the aneurysm and vessels.
     """
-    aneurysm_cells = []
-    vessels_cells = []
-    for cell in surface_cells:
-        if (aneurysm_surface[cell[0]] == 1 and aneurysm_surface[cell[1]] == 1 and aneurysm_surface[cell[2]] == 1):
-            aneurysm_cells.append(cell)
-        else:
-            vessels_cells.append(cell)
-    aneurysm_cells = np.array(aneurysm_cells)
-    vessels_cells = np.array(vessels_cells)
-    return aneurysm_cells, vessels_cells
+    return surface_cells[np.nonzero(1*(np.sum(aneurysm_surface[surface_cells], axis=1)==3))[0],:], surface_cells[np.nonzero(1*(np.sum(aneurysm_surface[surface_cells], axis=1)!=3))[0],:]
 
 def WSS_regions_cells(
         surface_cells: np.ndarray,
@@ -67,16 +51,7 @@ def WSS_regions_cells(
     """
     Return cells belonging to the WSS low and high regions.
     """
-    WSS_low_cells = []
-    WSS_high_cells = []
-    for cell in surface_cells:
-        if (regions[cell[0]] == 1 and regions[cell[1]] == 1 and regions[cell[2]] == 1):
-            WSS_high_cells.append(cell)
-        elif (regions[cell[0]] == -1 and regions[cell[1]] == -1 and regions[cell[2]] == -1):
-            WSS_low_cells.append(cell)
-    WSS_low_cells = np.array(WSS_low_cells)
-    WSS_high_cells = np.array(WSS_high_cells)
-    return WSS_low_cells, WSS_high_cells
+    return surface_cells[np.nonzero(1*(np.sum(regions[surface_cells], axis=1)==-3))[0]], surface_cells[np.nonzero(1*(np.sum(regions[surface_cells], axis=1)==3))[0]]
 
 def positive_v_y_cells(
         mesh: meshio.Mesh,
@@ -84,9 +59,4 @@ def positive_v_y_cells(
     """
     Return the cells with a positive y component of the velocity.
     """
-    positive_v_y_cells = []
-    for cell in mesh.cells[0].data:
-        if (mesh.point_data['Vitesse'][cell[0]][1] > 0 and mesh.point_data['Vitesse'][cell[1]][1] > 0 and mesh.point_data['Vitesse'][cell[2]][1] > 0):
-            positive_v_y_cells.append(cell)
-    positive_v_y_cells = np.array(positive_v_y_cells)
-    return positive_v_y_cells
+    return mesh.cells[0].data[np.nonzero(1*(np.sum(1*(mesh.point_data['Vitesse'][:,1][mesh.cells[0].data]>0), axis=1)==3))[0],:]
