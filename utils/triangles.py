@@ -1,7 +1,7 @@
 import meshio
 import numpy as np
 
-def triangle_area(
+def triangle_area_old(
         triangle: np.ndarray
 )-> float:
     """
@@ -13,6 +13,13 @@ def triangle_area(
     s = (a + b + c)/2
     return np.sqrt(s*(s-a)*(s-b)*(s-c))
 
+def normal(triangles):
+    return np.cross(triangles[:,1] - triangles[:,0], 
+                    triangles[:,2] - triangles[:,0], axis=1)
+
+def v_triangle_area(triangles):
+    return np.linalg.norm(normal(triangles), axis=1) / 2
+
 def surface_area(
         points: np.ndarray,
         cells: np.ndarray
@@ -20,10 +27,7 @@ def surface_area(
     """
     Return the surface area of a mesh region indicated by its cells (triangles).
     """
-    surface_area = 0
-    for cell in cells:
-        surface_area += triangle_area(points[cell])
-    return surface_area
+    return np.sum(v_triangle_area(points[cells]))
 
 def extract_surface_cells(
         cells: np.ndarray,

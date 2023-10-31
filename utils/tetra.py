@@ -2,13 +2,35 @@ import meshio
 import numpy as np
 from typing import Union, List
 
-def tetra_volume(
+def tetra_volume_old(
         tetrahedron: np.ndarray
 ) -> float:
     """
     Return the volume of a tetrahedron.
     """
     return abs(np.linalg.det(np.array([tetrahedron[0]-tetrahedron[3], tetrahedron[1]-tetrahedron[3], tetrahedron[2]-tetrahedron[3]])))/6
+
+def tetra_volume(
+        tetrahedron: np.ndarray
+) -> float:
+    """
+    Return the volume of a tetrahedron.
+    """
+    if tetrahedron.ndim==2:
+        s = tetrahedron.shape
+        tetrahedron = tetrahedron.reshape((1, s[0], s[1]))
+    return np.sum(abs(np.linalg.det(np.swapaxes(np.stack((tetrahedron[:,0]-tetrahedron[:,3], tetrahedron[:,1]-tetrahedron[:,3], tetrahedron[:,2]-tetrahedron[:,3])), 0, 1)))/6)
+
+def v_tetra_volume(
+        tetrahedron: np.ndarray
+) -> list[float]:
+    """
+    Return the volume of a tetrahedron.
+    """
+    if tetrahedron.ndim==2:
+        s = tetrahedron.shape
+        tetrahedron = tetrahedron.reshape((1, s[0], s[1]))
+    return abs(np.linalg.det(np.swapaxes(np.stack((tetrahedron[:,0]-tetrahedron[:,3], tetrahedron[:,1]-tetrahedron[:,3], tetrahedron[:,2]-tetrahedron[:,3])), 0, 1)))/6
 
 def volume_region(
         points: np.ndarray,
@@ -17,10 +39,7 @@ def volume_region(
     """
     Return the volume of a mesh region indicated by its cells (tetrahedra).
     """
-    volume = 0
-    for cell in cells:
-        volume += tetra_volume(points[cell])
-    return volume
+    return tetra_volume(points[cells])
 
 def slice_tetra(
         points: np.ndarray,
