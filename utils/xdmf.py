@@ -3,7 +3,7 @@ from typing import Union, List
 import numpy as np
 import meshio
 import vtk
-from vtk.util.numpy_support import vtk_to_numpy
+from vtk.util.numpy_support import vtk_to_numpy #type: ignore
 from matplotlib import tri
 
 class XDMF_Wrapper(object):
