@@ -32,9 +32,9 @@ class XDMF_Wrapper(object):
         """
         data = vtk_to_numpy(self.xdmf_data.GetOutput().GetBlock(0).GetCells().GetData())
         offsets = vtk_to_numpy(self.xdmf_data.GetOutput().GetBlock(0).GetCellLocationsArray())
+        types = vtk_to_numpy(self.xdmf_data.GetOutput().GetBlock(0).GetCellTypesArray())
 
-        cells = data.reshape((-1, 4))
-        cells = cells[:len(offsets)-1, :]
+        cells = (data[:4*types.shape[0]]).reshape(-1,4)
         return cells
 
     def get_time_steps(self):
