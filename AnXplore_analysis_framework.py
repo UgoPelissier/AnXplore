@@ -23,7 +23,7 @@ if __name__ == '__main__':
     for case in cases:
         filenames = glob.glob(osp.join(data_dir, case, "*.xdmf"))
 
-        with alive_bar(T_cardiac_cycle, title=f"Computing indicators for {case} case") as bar:
+        with alive_bar(len(filenames), title=f"Computing indicators for {case} case") as bar:
             for filename in filenames:
                 xdmf_file = XDMF_Wrapper(osp.join(filename))    
 
