@@ -56,7 +56,7 @@ if __name__ == '__main__':
     ICI = np.array(ICI)
 
     min_wss_aneurysm = min_wss_aneurysm[1]/min_wss_aneurysm[0]
-    min_wss_aneurysm = max_wss_aneurysm[1]/max_wss_aneurysm[0]
+    max_wss_aneurysm = max_wss_aneurysm[1]/max_wss_aneurysm[0]
     mean_wss_aneurysm = mean_wss_aneurysm[1]/mean_wss_aneurysm[0]
     mean_osi_aneurysm = mean_osi_aneurysm[1]/mean_osi_aneurysm[0]
     max_osi_aneurysm = max_osi_aneurysm[1]/max_osi_aneurysm[0]
@@ -69,7 +69,7 @@ if __name__ == '__main__':
 
     # Plot boxplots on same figure
     fig, ax = plt.subplots()
-    bp = ax.boxplot([min_wss_aneurysm, min_wss_aneurysm, mean_wss_aneurysm], showfliers=False, patch_artist = True, notch ='True')
+    bp = ax.boxplot([min_wss_aneurysm, max_wss_aneurysm, mean_wss_aneurysm], showfliers=False, patch_artist = True, notch ='True')
 
     color = '#5f6a6a'
  
