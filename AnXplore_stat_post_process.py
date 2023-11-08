@@ -6,7 +6,7 @@ import seaborn as sns
 
 if __name__ == '__main__':
 
-    data_dir = "data"
+    res_dir = "res"
     cases = ['rigid', 'fsi']
 
     min_wss_aneurysm = []
@@ -26,7 +26,7 @@ if __name__ == '__main__':
     ICI = []
 
     for case in cases:
-        filenames = glob.glob(osp.join(data_dir, "csv", case, "*.csv"))
+        filenames = glob.glob(osp.join(res_dir, "csv", case, "*.csv"))
         with alive_bar(len(filenames), title=f"Extracting indicators for {case} case") as bar:
             for filename in filenames:
                 df = pd.read_csv(filename, sep=' ')
@@ -66,8 +66,6 @@ if __name__ == '__main__':
         'ICI': ICI,
     }
 
-    # indicators = ['min_wss_aneurysm', 'max_wss_aneurysm', 'mean_wss_aneurysm', 'min_osi_aneurysm', 'max_osi_aneurysm', 'mean_osi_aneurysm', 'min_tawss_aneurysm', 'max_tawss_aneurysm', 'mean_tawss_aneurysm', 'KER', 'VDR', 'LSA', 'HSA', 'SCI', 'ICI']
-
     titles = ['$WSS_{min}$', '$WSS_{max}$', '$WSS_{avg}$', '$OSI_{min}$', '$OSI_{max}$', '$OSI_{avg}$', '$TAWSS_{min}$', '$TAWSS_{max}$', '$TAWSS_{avg}$', 'KER', 'VDR', 'LSA', 'HSA', 'SCI', 'ICI']
 
     for title, key in zip(titles, indicators):
@@ -82,5 +80,5 @@ if __name__ == '__main__':
         ax.ticklabel_format(axis='y', style='sci', scilimits=(0,0))
         ax.set_ylabel(title)
         fig = ax.get_figure()
-        fig.savefig(osp.join(data_dir, "violin", f'{key}.png'))
-        ax.clear() # clear axes for next plot
+        fig.savefig(osp.join(res_dir, "violin", f'{key}.png'))
+        ax.clear()
