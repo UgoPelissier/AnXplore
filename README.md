@@ -4,6 +4,7 @@ AnXplore analysis framework
 ### Incidactors
 - `WSS`: Wall Shear Stress
 - `OSI`: Oscillatory Shear Index
+- `TAWSS`: Time Average Wall Shear Stress
 - `KER`: Kinetic Energy Ratio
 - `VDR`: Viscous Dissipation Ratio
 - `LSA`: Low Shear Area
@@ -16,11 +17,26 @@ Source: [Computational Hemodynamics Framework for the Analysis of Cerebral Aneur
 ### Folder structure
 ```
 └── data
-    ├── AnXplore178_FSI.h5
-    └── AnXplore178_FSI.xdmf
-├── utils/
+    ├── fsi
+        ├── *_1.h5
+        ├── *_1.xdmf
+        .
+        .
+        .
+        ├── *_101.h5
+        └── *_101.xdmf
+    └── rigid
+        ├── *_1.h5
+        ├── *_1.xdmf
+        .
+        .
+        .
+        ├── *_101.h5
+        └── *_101.xdmf
+├── utils
 ├── .gitignore
 ├── AnXplore_analysis_framework.py
+├── AnXplore_stat_post_process.py
 └── README.md
 ```
 
@@ -29,6 +45,11 @@ Source: [Computational Hemodynamics Framework for the Analysis of Cerebral Aneur
 python AnXplore_analysis_framework.py
 ```
 
-Generates csv file in the folder `data/csv/` containing the values of the indicators at each time step of a cardiac cycle.
-
+Generates csv file in the folder `res/csv/` containing the values of the indicators at each time step of a cardiac cycle.
 The last 4 lines are the min, max, mean and std of the indicators over the whole cardiac cycle.
+
+```
+python AnXplore_stat_post_process.py
+```
+
+Generates violin plots of the indicators over a cardiac cycle in the folder `res/violin/`.
