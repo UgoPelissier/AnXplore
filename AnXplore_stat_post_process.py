@@ -1,3 +1,4 @@
+import os
 import os.path as osp
 import glob
 import pandas as pd
@@ -8,6 +9,9 @@ if __name__ == '__main__':
 
     res_dir = "res"
     cases = ['rigid', 'fsi']
+
+    os.makedirs(osp.join(res_dir), exist_ok=True)
+    os.makedirs(osp.join(res_dir, "violin"), exist_ok=True)
 
     min_wss_aneurysm = []
     max_wss_aneurysm = []
