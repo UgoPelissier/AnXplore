@@ -46,9 +46,10 @@ def process(
 if __name__ == '__main__':
 
     data_dir = "data"
+    res_dir = "res"
     cases = ['rigid', 'fsi']
 
-    os.makedirs(osp.join(data_dir, "csv"), exist_ok=True)
+    os.makedirs(osp.join(res_dir, "csv"), exist_ok=True)
 
     vessel_in_out_origin = [0.0, 0.001, 0.0]
     vessel_in_out_plane = [0.0, 1.0, 0.0]
@@ -59,7 +60,7 @@ if __name__ == '__main__':
     T_cardiac_cycle = 20
 
     for case in cases:
-        os.makedirs(osp.join(data_dir, "csv", case), exist_ok=True)
+        os.makedirs(osp.join(res_dir, "csv", case), exist_ok=True)
         filenames = glob.glob(osp.join(data_dir, case, "*.xdmf"))
         threads = []
 
