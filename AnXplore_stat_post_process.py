@@ -1,164 +1,86 @@
-import os
 import os.path as osp
 import glob
-import numpy as np
 import pandas as pd
 from alive_progress import alive_bar
-import matplotlib.pyplot as plt
+import seaborn as sns
 
 if __name__ == '__main__':
 
     data_dir = "data"
     cases = ['rigid', 'fsi']
 
-    min_wss_aneurysm = [[], []]
-    max_wss_aneurysm = [[], []]
-    mean_wss_aneurysm = [[], []]
-    mean_osi_aneurysm = [[], []]
-    max_osi_aneurysm = [[], []]
-    KER = [[], []]
-    VDR = [[], []]
-    LSA = [[], []]
-    HSA = [[], []]
-    SCI = [[], []]
-    ICI = [[], []]
+    min_wss_aneurysm = []
+    max_wss_aneurysm = []
+    mean_wss_aneurysm = []
+    min_osi_aneurysm = []
+    max_osi_aneurysm = []
+    mean_osi_aneurysm = []
+    min_tawss_aneurysm = []
+    max_tawss_aneurysm = []
+    mean_tawss_aneurysm = []
+    KER = []
+    VDR = []
+    LSA = []
+    HSA = []
+    SCI = []
+    ICI = []
 
-    for i, case in enumerate(cases):
+    for case in cases:
         filenames = glob.glob(osp.join(data_dir, "csv", case, "*.csv"))
         with alive_bar(len(filenames), title=f"Extracting indicators for {case} case") as bar:
             for filename in filenames:
                 df = pd.read_csv(filename, sep=' ')
-                df.drop(df.columns[[0,1,4,5,6,7,9,10,11]], axis=1, inplace=True)
-                min_wss_aneurysm[i] += df['min_wss_aneurysm'].tolist()[:-4]
-                max_wss_aneurysm[i] += df['max_wss_aneurysm'].tolist()[:-4]
-                mean_wss_aneurysm[i] += df['mean_wss_aneurysm'].tolist()[:-4]
-                mean_osi_aneurysm[i] += df['mean_osi_aneurysm'].tolist()[-5:-4]
-                max_osi_aneurysm[i] += df['max_osi_aneurysm'].tolist()[-5:-4]
-                KER[i] += df['KER'].tolist()[:-4]
-                VDR[i] += df['VDR'].tolist()[:-4]
-                LSA[i] += df['LSA'].tolist()[:-4]
-                HSA[i] += df['HSA'].tolist()[:-4]
-                SCI[i] += df['SCI'].tolist()[:-4]
-                ICI[i] += df['ICI'].tolist()[:-4]
+                min_wss_aneurysm += df['min_wss_aneurysm'].tolist()[:-4]
+                max_wss_aneurysm += df['max_wss_aneurysm'].tolist()[:-4]
+                mean_wss_aneurysm += df['mean_wss_aneurysm'].tolist()[:-4]
+                min_osi_aneurysm += df['min_osi_aneurysm'].tolist()[-5:-4]
+                max_osi_aneurysm += df['max_osi_aneurysm'].tolist()[-5:-4]
+                mean_osi_aneurysm += df['mean_osi_aneurysm'].tolist()[-5:-4]
+                min_tawss_aneurysm += df['min_tawss_aneurysm'].tolist()[-5:-4]
+                max_tawss_aneurysm += df['max_tawss_aneurysm'].tolist()[-5:-4]
+                mean_tawss_aneurysm += df['mean_tawss_aneurysm'].tolist()[-5:-4]
+                KER += df['KER'].tolist()[:-4]
+                VDR += df['VDR'].tolist()[:-4]
+                LSA += df['LSA'].tolist()[:-4]
+                HSA += df['HSA'].tolist()[:-4]
+                SCI += df['SCI'].tolist()[:-4]
+                ICI += df['ICI'].tolist()[:-4]
                 bar()
         print("Done.")
-    
-    min_wss_aneurysm = np.array(min_wss_aneurysm)
-    max_wss_aneurysm = np.array(max_wss_aneurysm)
-    mean_wss_aneurysm = np.array(mean_wss_aneurysm)
-    mean_osi_aneurysm = np.array(mean_osi_aneurysm)
-    max_osi_aneurysm = np.array(max_osi_aneurysm)
-    KER = np.array(KER)
-    VDR = np.array(VDR)
-    LSA = np.array(LSA)
-    HSA = np.array(HSA)
-    SCI = np.array(SCI)
-    ICI = np.array(ICI)
 
-    min_wss_aneurysm = min_wss_aneurysm[1]/min_wss_aneurysm[0]
-    max_wss_aneurysm = max_wss_aneurysm[1]/max_wss_aneurysm[0]
-    mean_wss_aneurysm = mean_wss_aneurysm[1]/mean_wss_aneurysm[0]
-    mean_osi_aneurysm = mean_osi_aneurysm[1]/mean_osi_aneurysm[0]
-    max_osi_aneurysm = max_osi_aneurysm[1]/max_osi_aneurysm[0]
-    KER = KER[1]/KER[0]
-    VDR = VDR[1]/VDR[0]
-    LSA = LSA[1]/LSA[0]
-    HSA = HSA[1]/HSA[0]
-    SCI = SCI[1]/SCI[0]
-    ICI = ICI[1]/ICI[0]
+    indicators = {
+        'min_wss_aneurysm': min_wss_aneurysm,
+        'max_wss_aneurysm': max_wss_aneurysm,
+        'mean_wss_aneurysm': mean_wss_aneurysm,
+        'min_osi_aneurysm': min_osi_aneurysm,
+        'max_osi_aneurysm': max_osi_aneurysm,
+        'mean_osi_aneurysm': mean_osi_aneurysm,
+        'min_tawss_aneurysm': min_tawss_aneurysm,
+        'max_tawss_aneurysm': max_tawss_aneurysm,
+        'mean_tawss_aneurysm': mean_tawss_aneurysm,
+        'KER': KER,
+        'VDR': VDR,
+        'LSA': LSA,
+        'HSA': HSA,
+        'SCI': SCI,
+        'ICI': ICI,
+    }
 
-    # Plot boxplots on same figure
-    fig, ax = plt.subplots()
-    bp = ax.boxplot([min_wss_aneurysm, max_wss_aneurysm, mean_wss_aneurysm], showfliers=False, patch_artist = True, notch ='True')
+    # indicators = ['min_wss_aneurysm', 'max_wss_aneurysm', 'mean_wss_aneurysm', 'min_osi_aneurysm', 'max_osi_aneurysm', 'mean_osi_aneurysm', 'min_tawss_aneurysm', 'max_tawss_aneurysm', 'mean_tawss_aneurysm', 'KER', 'VDR', 'LSA', 'HSA', 'SCI', 'ICI']
 
-    color = '#5f6a6a'
- 
-    for patch in bp['boxes']:
-        patch.set_facecolor(color)
-    
-    # changing color of whiskers
-    for whisker in bp['whiskers']:
-        whisker.set(color ='#8B008B',
-                    linestyle =":")
-    
-    # changing colorof caps
-    for cap in bp['caps']:
-        cap.set(color ='#8B008B')
-    
-    # changing color of medians
-    for median in bp['medians']:
-        median.set(color ='red')
-    
-    # changing style of fliers
-    for flier in bp['fliers']:
-        flier.set(marker ='D',
-                color ='#e7298a',
-                alpha = 0.5)
+    titles = ['$WSS_{min}$', '$WSS_{max}$', '$WSS_{avg}$', '$OSI_{min}$', '$OSI_{max}$', '$OSI_{avg}$', '$TAWSS_{min}$', '$TAWSS_{max}$', '$TAWSS_{avg}$', 'KER', 'VDR', 'LSA', 'HSA', 'SCI', 'ICI']
 
-    ax.set_xticklabels(['min WSS', 'max WSS', 'mean WSS'])
-    plt.title("FSI / Rigid - Aneurysm")
-    plt.savefig(osp.join(data_dir, "wss.png"))
+    for title, key in zip(titles, indicators):
+        case = ['Rigid' for _ in range(int(len(indicators[key])/2))] + ['FSI' for _ in range(int(len(indicators[key])/2))]
+        data = {
+            key: indicators[key],
+            'Case': case
+        }
+        df = pd.DataFrame(data=data)
 
-    # Plot boxplots on same figure
-    fig, ax = plt.subplots()
-    bp = ax.boxplot([mean_osi_aneurysm, max_osi_aneurysm], showfliers=False, patch_artist = True, notch ='True')
-
-    color = '#5f6a6a'
- 
-    for patch in bp['boxes']:
-        patch.set_facecolor(color)
-    
-    # changing color of whiskers
-    for whisker in bp['whiskers']:
-        whisker.set(color ='#8B008B',
-                    linestyle =":")
-    
-    # changing colorof caps
-    for cap in bp['caps']:
-        cap.set(color ='#8B008B')
-    
-    # changing color of medians
-    for median in bp['medians']:
-        median.set(color ='red')
-    
-    # changing style of fliers
-    for flier in bp['fliers']:
-        flier.set(marker ='D',
-                color ='#e7298a',
-                alpha = 0.5)
-
-    ax.set_xticklabels(['mean OSI', 'max OSI'])
-    plt.title("FSI / Rigid - Aneurysm")
-    plt.savefig(osp.join(data_dir, "osi.png"))
-
-    # Plot boxplots on same figure
-    fig, ax = plt.subplots()
-    bp = ax.boxplot([KER, VDR, LSA, HSA, SCI, ICI], showfliers=False, patch_artist = True, notch ='True')
-
-    color = '#5f6a6a'
- 
-    for patch in bp['boxes']:
-        patch.set_facecolor(color)
-    
-    # changing color of whiskers
-    for whisker in bp['whiskers']:
-        whisker.set(color ='#8B008B',
-                    linestyle =":")
-    
-    # changing colorof caps
-    for cap in bp['caps']:
-        cap.set(color ='#8B008B')
-    
-    # changing color of medians
-    for median in bp['medians']:
-        median.set(color ='red')
-    
-    # changing style of fliers
-    for flier in bp['fliers']:
-        flier.set(marker ='D',
-                color ='#e7298a',
-                alpha = 0.5)
-
-    ax.set_xticklabels(['KER', 'VDR', 'LSA', 'HSA', 'SCI', 'ICI'])
-    plt.title("FSI / Rigid")
-    plt.savefig(osp.join(data_dir, "indicators.png"))
+        ax = sns.violinplot(data=df, y=key, hue="Case", linewidth=1.5, palette="Set2")
+        ax.ticklabel_format(axis='y', style='sci', scilimits=(0,0))
+        ax.set_ylabel(title)
+        fig = ax.get_figure()
+        fig.savefig(osp.join(data_dir, "violin", f'{key}.png'))
+        ax.clear() # clear axes for next plot
