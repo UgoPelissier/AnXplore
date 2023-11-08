@@ -74,6 +74,18 @@ def osi(
     mean_osi_aneurysm, std_osi_aneurysm = mean_std(OSI[aneurysm_surface_points])
     return min_osi_aneurysm, max_osi_aneurysm, mean_osi_aneurysm, std_osi_aneurysm
 
+def tawss(
+        xdmf_file: XDMF_Wrapper,
+        aneurysm_surface_points: np.ndarray
+) -> tuple[float]:
+    """
+    Compute the min, max, mean and std OSI values in the aneurysm.
+    """
+    TAWSS = xdmf_file.get_point_field('TAWSS')
+    min_tawss_aneurysm, max_tawss_aneurysm = min_max(TAWSS[aneurysm_surface_points])
+    mean_tawss_aneurysm, std_tawss_aneurysm = mean_std(TAWSS[aneurysm_surface_points])
+    return min_tawss_aneurysm, max_tawss_aneurysm, mean_tawss_aneurysm, std_tawss_aneurysm
+
 def compute_KER(
         xdmf_file: XDMF_Wrapper,
         aneurysm_tetra: np.ndarray,
@@ -176,7 +188,8 @@ def compute_indicators(
 
     # Compute first indicators
     min_wss, max_wss, min_wss_aneurysm, max_wss_aneurysm, min_wss_vessels, max_wss_vessels, mean_wss, std_wss, mean_wss_aneurysm, std_wss_aneurysm, mean_wss_vessels, std_wss_vessels = wss(xdmf_file, vessels, aneurysm_surface_points)
-    _, max_osi_aneurysm, mean_osi_aneurysm, _ = osi(xdmf_file, aneurysm_surface_points)
+    min_osi_aneurysm, max_osi_aneurysm, mean_osi_aneurysm, std_osi_aneurysm = osi(xdmf_file, aneurysm_surface_points)
+    min_tawss_aneurysm, max_tawss_aneurysm, mean_tawss_aneurysm, std_tawss_aneurysm = tawss(xdmf_file, aneurysm_surface_points)
     KER = compute_KER(xdmf_file, aneurysm_tetra, vessels_tetra, V_a, V_v)
     VDR = compute_VDR(xdmf_file, aneurysm_tetra, vessels_tetra, V_a, V_v)
     ICI = compute_ICI(xdmf_file, vessel_in_out_origin, vessel_in_out_plane, orifice_origin, orifice_plane)
@@ -188,4 +201,4 @@ def compute_indicators(
     LSA, HSA = compute_LSA(xdmf_file, aneurysm_surface_cells, WSS_low_cells, WSS_high_cells)
     SCI = compute_SCI(xdmf_file, aneurysm_surface_cells, WSS_high_cells, HSA)
 
-    return [min_wss, max_wss, min_wss_aneurysm, max_wss_aneurysm, min_wss_vessels, max_wss_vessels, mean_wss, std_wss, mean_wss_aneurysm, std_wss_aneurysm, mean_wss_vessels, std_wss_vessels, mean_osi_aneurysm, max_osi_aneurysm, KER, VDR, LSA, HSA, SCI, ICI]
+    return [min_wss, max_wss, min_wss_aneurysm, max_wss_aneurysm, min_wss_vessels, max_wss_vessels, mean_wss, std_wss, mean_wss_aneurysm, std_wss_aneurysm, mean_wss_vessels, std_wss_vessels, min_osi_aneurysm, max_osi_aneurysm, mean_osi_aneurysm, std_osi_aneurysm, min_tawss_aneurysm, max_tawss_aneurysm, mean_tawss_aneurysm, std_tawss_aneurysm, KER, VDR, LSA, HSA, SCI, ICI]
