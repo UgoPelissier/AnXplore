@@ -81,10 +81,10 @@ def tawss(
     """
     Compute the min, max, mean and std OSI values in the aneurysm.
     """
-    TAWSS = xdmf_file.get_point_field('TAWSS')
-    min_tawss_aneurysm, max_tawss_aneurysm = min_max(TAWSS[aneurysm_surface_points])
-    mean_tawss_aneurysm, std_tawss_aneurysm = mean_std(TAWSS[aneurysm_surface_points])
-    return min_tawss_aneurysm, max_tawss_aneurysm, mean_tawss_aneurysm, std_tawss_aneurysm
+#     TAWSS = xdmf_file.get_point_field('TAWSS')
+#     min_tawss_aneurysm, max_tawss_aneurysm = min_max(TAWSS[aneurysm_surface_points])
+#     mean_tawss_aneurysm, std_tawss_aneurysm = mean_std(TAWSS[aneurysm_surface_points])
+    return 0, 0, 0, 0 # min_tawss_aneurysm, max_tawss_aneurysm, mean_tawss_aneurysm, std_tawss_aneurysm
 
 def compute_KER(
         xdmf_file: XDMF_Wrapper,
