@@ -12,6 +12,8 @@ if __name__ == '__main__':
 
     os.makedirs(osp.join(res_dir), exist_ok=True)
     os.makedirs(osp.join(res_dir, "violin"), exist_ok=True)
+    os.makedirs(osp.join(res_dir, "violin", "baseline"), exist_ok=True)
+    os.makedirs(osp.join(res_dir, "violin", "hd"), exist_ok=True)
 
     min_wss_aneurysm = []
     max_wss_aneurysm = []
@@ -30,7 +32,7 @@ if __name__ == '__main__':
     ICI = []
 
     for case in cases:
-        filenames = glob.glob(osp.join(res_dir, "csv", case, "*.csv"))
+        filenames = glob.glob(osp.join(res_dir, "csv", "baseline", case, "*.csv"))
         with alive_bar(len(filenames), title=f"Extracting indicators for {case} case") as bar:
             for filename in filenames:
                 df = pd.read_csv(filename, sep=' ')
@@ -84,8 +86,13 @@ if __name__ == '__main__':
         ax.ticklabel_format(axis='y', style='sci', scilimits=(0,0))
         ax.set_ylabel(title)
         fig = ax.get_figure()
-        fig.savefig(osp.join(res_dir, "violin", f'{key}.png'))
+        fig.savefig(osp.join(res_dir, "violin", "baseline", f'{key}.png'))
         ax.clear()
+
+    ########################################################################################################
+
+    scenarios = ['baseline', 'hd']
+    files = [osp.basename(file) for file in glob.glob(osp.join(res_dir, "csv", "hd", "rigid", "*.csv"))]
 
     min_wss_aneurysm = [[], [], []]
     max_wss_aneurysm = [[], [], []]
@@ -100,93 +107,53 @@ if __name__ == '__main__':
     SCI = [[], [], []]
     ICI = [[], [], []]
 
-    for case in cases:
-        filenames = glob.glob(osp.join(res_dir, "csv", case, "*.csv"))
-        for filename in filenames:
-                df = pd.read_csv(filename, sep=' ')
+    for scenario in scenarios:
+        for case in cases:
+            filenames = [osp.join(res_dir, "csv", scenario, case, file) for file in files]
+            with alive_bar(len(filenames), title=f"Extracting indicators for {scenario} - {case} case") as bar:
+                for filename in filenames:
+                        df = pd.read_csv(filename, sep=' ')
 
-                min_wss_aneurysm[0] += df['min_wss_aneurysm'].tolist()[:-4]
-                max_wss_aneurysm[0] += df['max_wss_aneurysm'].tolist()[:-4]
-                mean_wss_aneurysm[0] += df['mean_wss_aneurysm'].tolist()[:-4]
-                min_osi_aneurysm[0] += df['min_osi_aneurysm'].tolist()[-5:-4]
-                max_osi_aneurysm[0] += df['max_osi_aneurysm'].tolist()[-5:-4]
-                mean_osi_aneurysm[0] += df['mean_osi_aneurysm'].tolist()[-5:-4]
-                KER[0] += df['KER'].tolist()[:-4]
-                VDR[0] += df['VDR'].tolist()[:-4]
-                LSA[0] += df['LSA'].tolist()[:-4]
-                HSA[0] += df['HSA'].tolist()[:-4]
-                SCI[0] += df['SCI'].tolist()[:-4]
-                ICI[0] += df['ICI'].tolist()[:-4]
+                        min_wss_aneurysm[0] += df['min_wss_aneurysm'].tolist()[:-4]
+                        max_wss_aneurysm[0] += df['max_wss_aneurysm'].tolist()[:-4]
+                        mean_wss_aneurysm[0] += df['mean_wss_aneurysm'].tolist()[:-4]
+                        min_osi_aneurysm[0] += df['min_osi_aneurysm'].tolist()[-5:-4]
+                        max_osi_aneurysm[0] += df['max_osi_aneurysm'].tolist()[-5:-4]
+                        mean_osi_aneurysm[0] += df['mean_osi_aneurysm'].tolist()[-5:-4]
+                        KER[0] += df['KER'].tolist()[:-4]
+                        VDR[0] += df['VDR'].tolist()[:-4]
+                        LSA[0] += df['LSA'].tolist()[:-4]
+                        HSA[0] += df['HSA'].tolist()[:-4]
+                        SCI[0] += df['SCI'].tolist()[:-4]
+                        ICI[0] += df['ICI'].tolist()[:-4]
 
-                min_wss_aneurysm[1] +=  [case for _ in range(len(df['min_wss_aneurysm'].tolist()[:-4]))]
-                max_wss_aneurysm[1] +=  [case for _ in range(len(df['max_wss_aneurysm'].tolist()[:-4]))]
-                mean_wss_aneurysm[1] +=  [case for _ in range(len(df['mean_wss_aneurysm'].tolist()[:-4]))]
-                min_osi_aneurysm[1] +=  [case for _ in range(len(df['min_osi_aneurysm'].tolist()[-5:-4]))]
-                max_osi_aneurysm[1] +=  [case for _ in range(len(df['max_osi_aneurysm'].tolist()[-5:-4]))]
-                mean_osi_aneurysm[1] +=  [case for _ in range(len(df['mean_osi_aneurysm'].tolist()[-5:-4]))]
-                KER[1] +=  [case for _ in range(len(df['KER'].tolist()[:-4]))]
-                VDR[1] +=  [case for _ in range(len(df['VDR'].tolist()[:-4]))]
-                LSA[1] +=  [case for _ in range(len(df['LSA'].tolist()[:-4]))]
-                HSA[1] +=  [case for _ in range(len(df['HSA'].tolist()[:-4]))]
-                SCI[1] +=  [case for _ in range(len(df['SCI'].tolist()[:-4]))]
-                ICI[1] +=  [case for _ in range(len(df['ICI'].tolist()[:-4]))]
+                        min_wss_aneurysm[1] +=  [case for _ in range(len(df['min_wss_aneurysm'].tolist()[:-4]))]
+                        max_wss_aneurysm[1] +=  [case for _ in range(len(df['max_wss_aneurysm'].tolist()[:-4]))]
+                        mean_wss_aneurysm[1] +=  [case for _ in range(len(df['mean_wss_aneurysm'].tolist()[:-4]))]
+                        min_osi_aneurysm[1] +=  [case for _ in range(len(df['min_osi_aneurysm'].tolist()[-5:-4]))]
+                        max_osi_aneurysm[1] +=  [case for _ in range(len(df['max_osi_aneurysm'].tolist()[-5:-4]))]
+                        mean_osi_aneurysm[1] +=  [case for _ in range(len(df['mean_osi_aneurysm'].tolist()[-5:-4]))]
+                        KER[1] +=  [case for _ in range(len(df['KER'].tolist()[:-4]))]
+                        VDR[1] +=  [case for _ in range(len(df['VDR'].tolist()[:-4]))]
+                        LSA[1] +=  [case for _ in range(len(df['LSA'].tolist()[:-4]))]
+                        HSA[1] +=  [case for _ in range(len(df['HSA'].tolist()[:-4]))]
+                        SCI[1] +=  [case for _ in range(len(df['SCI'].tolist()[:-4]))]
+                        ICI[1] +=  [case for _ in range(len(df['ICI'].tolist()[:-4]))]
 
-                min_wss_aneurysm[2] +=  ['baseline' for _ in range(len(df['min_wss_aneurysm'].tolist()[:-4]))]
-                max_wss_aneurysm[2] +=  ['baseline' for _ in range(len(df['max_wss_aneurysm'].tolist()[:-4]))]
-                mean_wss_aneurysm[2] +=  ['baseline' for _ in range(len(df['mean_wss_aneurysm'].tolist()[:-4]))]
-                min_osi_aneurysm[2] +=  ['baseline' for _ in range(len(df['min_osi_aneurysm'].tolist()[-5:-4]))]
-                max_osi_aneurysm[2] +=  ['baseline' for _ in range(len(df['max_osi_aneurysm'].tolist()[-5:-4]))]
-                mean_osi_aneurysm[2] +=  ['baseline' for _ in range(len(df['mean_osi_aneurysm'].tolist()[-5:-4]))]
-                KER[2] +=  ['baseline' for _ in range(len(df['KER'].tolist()[:-4]))]
-                VDR[2] +=  ['baseline' for _ in range(len(df['VDR'].tolist()[:-4]))]
-                LSA[2] +=  ['baseline' for _ in range(len(df['LSA'].tolist()[:-4]))]
-                HSA[2] +=  ['baseline' for _ in range(len(df['HSA'].tolist()[:-4]))]
-                SCI[2] +=  ['baseline' for _ in range(len(df['SCI'].tolist()[:-4]))]
-                ICI[2] +=  ['baseline' for _ in range(len(df['ICI'].tolist()[:-4]))]
-
-    for case in cases:
-        filenames = glob.glob(osp.join(res_dir, "csv", "hd", case, "*.csv"))
-        for filename in filenames:
-                df = pd.read_csv(filename, sep=' ')
-
-                min_wss_aneurysm[0] += df['min_wss_aneurysm'].tolist()[:-4]
-                max_wss_aneurysm[0] += df['max_wss_aneurysm'].tolist()[:-4]
-                mean_wss_aneurysm[0] += df['mean_wss_aneurysm'].tolist()[:-4]
-                min_osi_aneurysm[0] += df['min_osi_aneurysm'].tolist()[-5:-4]
-                max_osi_aneurysm[0] += df['max_osi_aneurysm'].tolist()[-5:-4]
-                mean_osi_aneurysm[0] += df['mean_osi_aneurysm'].tolist()[-5:-4]
-                KER[0] += df['KER'].tolist()[:-4]
-                VDR[0] += df['VDR'].tolist()[:-4]
-                LSA[0] += df['LSA'].tolist()[:-4]
-                HSA[0] += df['HSA'].tolist()[:-4]
-                SCI[0] += df['SCI'].tolist()[:-4]
-                ICI[0] += df['ICI'].tolist()[:-4]
-
-                min_wss_aneurysm[1] +=  [case for _ in range(len(df['min_wss_aneurysm'].tolist()[:-4]))]
-                max_wss_aneurysm[1] +=  [case for _ in range(len(df['max_wss_aneurysm'].tolist()[:-4]))]
-                mean_wss_aneurysm[1] +=  [case for _ in range(len(df['mean_wss_aneurysm'].tolist()[:-4]))]
-                min_osi_aneurysm[1] +=  [case for _ in range(len(df['min_osi_aneurysm'].tolist()[-5:-4]))]
-                max_osi_aneurysm[1] +=  [case for _ in range(len(df['max_osi_aneurysm'].tolist()[-5:-4]))]
-                mean_osi_aneurysm[1] +=  [case for _ in range(len(df['mean_osi_aneurysm'].tolist()[-5:-4]))]
-                KER[1] +=  [case for _ in range(len(df['KER'].tolist()[:-4]))]
-                VDR[1] +=  [case for _ in range(len(df['VDR'].tolist()[:-4]))]
-                LSA[1] +=  [case for _ in range(len(df['LSA'].tolist()[:-4]))]
-                HSA[1] +=  [case for _ in range(len(df['HSA'].tolist()[:-4]))]
-                SCI[1] +=  [case for _ in range(len(df['SCI'].tolist()[:-4]))]
-                ICI[1] +=  [case for _ in range(len(df['ICI'].tolist()[:-4]))]
-
-                min_wss_aneurysm[2] +=  ['hd' for _ in range(len(df['min_wss_aneurysm'].tolist()[:-4]))]
-                max_wss_aneurysm[2] +=  ['hd' for _ in range(len(df['max_wss_aneurysm'].tolist()[:-4]))]
-                mean_wss_aneurysm[2] +=  ['hd' for _ in range(len(df['mean_wss_aneurysm'].tolist()[:-4]))]
-                min_osi_aneurysm[2] +=  ['hd' for _ in range(len(df['min_osi_aneurysm'].tolist()[-5:-4]))]
-                max_osi_aneurysm[2] +=  ['hd' for _ in range(len(df['max_osi_aneurysm'].tolist()[-5:-4]))]
-                mean_osi_aneurysm[2] +=  ['hd' for _ in range(len(df['mean_osi_aneurysm'].tolist()[-5:-4]))]
-                KER[2] +=  ['hd' for _ in range(len(df['KER'].tolist()[:-4]))]
-                VDR[2] +=  ['hd' for _ in range(len(df['VDR'].tolist()[:-4]))]
-                LSA[2] +=  ['hd' for _ in range(len(df['LSA'].tolist()[:-4]))]
-                HSA[2] +=  ['hd' for _ in range(len(df['HSA'].tolist()[:-4]))]
-                SCI[2] +=  ['hd' for _ in range(len(df['SCI'].tolist()[:-4]))]
-                ICI[2] +=  ['hd' for _ in range(len(df['ICI'].tolist()[:-4]))]
+                        min_wss_aneurysm[2] +=  [scenario for _ in range(len(df['min_wss_aneurysm'].tolist()[:-4]))]
+                        max_wss_aneurysm[2] +=  [scenario for _ in range(len(df['max_wss_aneurysm'].tolist()[:-4]))]
+                        mean_wss_aneurysm[2] +=  [scenario for _ in range(len(df['mean_wss_aneurysm'].tolist()[:-4]))]
+                        min_osi_aneurysm[2] +=  [scenario for _ in range(len(df['min_osi_aneurysm'].tolist()[-5:-4]))]
+                        max_osi_aneurysm[2] +=  [scenario for _ in range(len(df['max_osi_aneurysm'].tolist()[-5:-4]))]
+                        mean_osi_aneurysm[2] +=  [scenario for _ in range(len(df['mean_osi_aneurysm'].tolist()[-5:-4]))]
+                        KER[2] +=  [scenario for _ in range(len(df['KER'].tolist()[:-4]))]
+                        VDR[2] +=  [scenario for _ in range(len(df['VDR'].tolist()[:-4]))]
+                        LSA[2] +=  [scenario for _ in range(len(df['LSA'].tolist()[:-4]))]
+                        HSA[2] +=  [scenario for _ in range(len(df['HSA'].tolist()[:-4]))]
+                        SCI[2] +=  [scenario for _ in range(len(df['SCI'].tolist()[:-4]))]
+                        ICI[2] +=  [scenario for _ in range(len(df['ICI'].tolist()[:-4]))]
+                        bar()
+            print("Done.")
 
     indicators = {
         'min_wss_aneurysm': min_wss_aneurysm,
@@ -216,5 +183,5 @@ if __name__ == '__main__':
         ax.ticklabel_format(axis='y', style='sci', scilimits=(0,0))
         ax.set_ylabel(title)
         fig = ax.get_figure()
-        fig.savefig(osp.join(res_dir, "violin", f'{key}.png'))
+        fig.savefig(osp.join(res_dir, "violin", "hd", f'{key}.png'))
         ax.clear()
