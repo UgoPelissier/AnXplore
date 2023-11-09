@@ -8,7 +8,10 @@ from utils.xdmf import XDMF_Wrapper
 from utils.indicators import compute_indicators
 
 def process(
-        filename: str,
+        data_dir: str,
+        res_dir: str,
+        case: str,
+        id: int,
         vessel_in_out_origin: list[float],
         vessel_in_out_plane: list[float],
         orifice_origin: list[float],
@@ -18,7 +21,7 @@ def process(
     """
     Compute the indicators for a given XDMF file.
     """
-    xdmf_file = XDMF_Wrapper(osp.join(filename))  
+    xdmf_file = XDMF_Wrapper(osp.join(data_dir, case, str(id), "AllFields.xdmf"))  
     indicators = []
 
     # Compute indicators over a cardiac cycle
@@ -36,7 +39,7 @@ def process(
     indicators = np.concatenate((indicators, min.reshape((1,-1)), max.reshape((1,-1)), mean.reshape((1,-1)), std.reshape((1,-1))))
 
     np.savetxt(
-        fname=osp.join(data_dir, "csv", case, f"{filename.split('/')[-1][:-5]}.csv"),
+        fname=osp.join(res_dir, "csv", case, f"Resultats_MESH_{id}.csv"),
         X=np.array(indicators),
         fmt="%.5f",
         header="min_wss max_wss min_wss_aneurysm max_wss_aneurysm min_wss_vessels max_wss_vessels mean_wss std_wss mean_wss_aneurysm std_wss_aneurysm mean_wss_vessels std_wss_vessels min_osi_aneurysm max_osi_aneurysm mean_osi_aneurysm std_osi_aneurysm min_tawss_aneurysm max_tawss_aneurysm mean_tawss_aneurysm std_tawss_aneurysm KER VDR LSA HSA SCI ICI",
@@ -45,8 +48,8 @@ def process(
 
 if __name__ == '__main__':
 
-    data_dir = "data"
-    res_dir = "res"
+    data_dir = "data/hd"
+    res_dir = "res/hd"
     cases = ['rigid', 'fsi']
 
     os.makedirs(osp.join(res_dir, "csv"), exist_ok=True)
@@ -57,15 +60,15 @@ if __name__ == '__main__':
     orifice_origin = [0.0, 5.3, 0.0]
     orifice_plane = [0.0, 1.0, 0.0]
 
-    T_cardiac_cycle = 20
+    T_cardiac_cycle = 80
 
     for case in cases:
         os.makedirs(osp.join(res_dir, "csv", case), exist_ok=True)
-        filenames = glob.glob(osp.join(data_dir, case, "*.xdmf"))
-        threads = []
+        filenames = glob.glob(osp.join(data_dir, case, "*"))
+        ids = np.sort([int(filenames[i][len(osp.join('data', 'hd', case))+1:]) for i in range(len(filenames))]).tolist()
 
-        with alive_bar(len(filenames), title=f"Computing indicators for {case} case") as bar:
-            for filename in filenames:
-                process(filename, vessel_in_out_origin, vessel_in_out_plane, orifice_origin, orifice_plane, T_cardiac_cycle)
+        with alive_bar(len(ids), title=f"Computing indicators for {case} case") as bar:
+            for id in ids:
+                process(data_dir, res_dir, case, id, vessel_in_out_origin, vessel_in_out_plane, orifice_origin, orifice_plane, T_cardiac_cycle)
                 bar()
         print("Done.")
