@@ -2,8 +2,10 @@ import os
 import os.path as osp
 import glob
 import pandas as pd
+import numpy as np
 from alive_progress import alive_bar
 import seaborn as sns
+from scipy import stats
 
 if __name__ == '__main__':
 
@@ -72,22 +74,67 @@ if __name__ == '__main__':
         'ICI': ICI,
     }
 
-    titles = ['$WSS_{min}$', '$WSS_{max}$', '$WSS_{avg}$', '$OSI_{min}$', '$OSI_{max}$', '$OSI_{avg}$', '$TAWSS_{min}$', '$TAWSS_{max}$', '$TAWSS_{avg}$', 'KER', 'VDR', 'LSA', 'HSA', 'SCI', 'ICI']
+    titles = ['$WSS_{min}$', '$WSS_{max}$', '$WSS_{mean}$', '$OSI_{min}$', '$OSI_{max}$', '$OSI_{mean}$', '$TAWSS_{min}$', '$TAWSS_{max}$', '$TAWSS_{mean}$', 'KER', 'VDR', 'LSA', 'HSA', 'SCI', 'ICI']
 
-    for title, key in zip(titles, indicators):
-        case = ['Rigid' for _ in range(int(len(indicators[key])/2))] + ['FSI' for _ in range(int(len(indicators[key])/2))]
-        data = {
-            key: indicators[key],
-            'Case': case
-        }
-        df = pd.DataFrame(data=data)
+    means = {}
+    with open(osp.join(res_dir, "pvalues.csv"), 'a') as f:
+        f.write('Indicator\tRigid\tFSI\tP-value\n')
+        for title, key in zip(titles, indicators):
+            rigid = indicators[key][:int(len(indicators[key])/2)]
+            fsi = indicators[key][int(len(indicators[key])/2):]
 
-        ax = sns.violinplot(data=df, y=key, hue="Case", linewidth=1.5, palette="Set2")
-        ax.ticklabel_format(axis='y', style='sci', scilimits=(0,0))
-        ax.set_ylabel(title)
-        fig = ax.get_figure()
-        fig.savefig(osp.join(res_dir, "violin", "baseline", f'{key}.png'))
-        ax.clear()
+            rigid_mean = stats.describe(rigid).mean
+            fsi_mean = stats.describe(fsi).mean
+            pvalue = stats.ttest_ind(rigid, fsi).pvalue
+
+            f.write(f'{key}\t{rigid_mean}\t{fsi_mean}\t{pvalue}\n')
+
+            means[key] = [rigid_mean, fsi_mean, pvalue]
+            
+            # case = ['Rigid' for _ in range(int(len(indicators[key])/2))] + ['FSI' for _ in range(int(len(indicators[key])/2))]
+            # data = {
+            #     key: indicators[key],
+            #     'Case': case
+            # }
+            # df = pd.DataFrame(data=data)
+
+            # ax = sns.violinplot(data=df, y=key, hue="Case", linewidth=1.5, palette="Set2")
+            # ax.ticklabel_format(axis='y', style='sci', scilimits=(0,0))
+            # ax.set_ylabel(title)
+            # fig = ax.get_figure()
+            # fig.savefig(osp.join(res_dir, "violin", "baseline", f'{key}.png'))
+            # ax.clear()
+
+    # Bar plot of means ratio
+    data = {
+        'Indicator': titles,
+        'Ratio': [means[key][0]/means[key][1] for key in means],
+    }
+    df = pd.DataFrame(data=data)
+    df = df.set_index('Indicator')
+    ax = df.plot.bar(rot=90)
+    ax.set_ylabel('Ratio')
+    # Bars in red
+    for i in range(len(ax.patches)):
+        ax.patches[i].set_color('r')
+        # If p-value < 0.05, add a star
+        if (means[list(means.keys())[i]][2] < 0.05):
+            # ax.patches[i].set_color('g')
+            ax.text(i, ax.patches[i].get_height() + 0.01, '*', fontsize=12, color='k')
+    # No x label
+    ax.set_xlabel('')
+    # No legend
+    ax.get_legend().remove()
+    # Draw a horizontal line at 1
+    ax.axhline(y=1, color='k', linestyle='-')
+    # Horizontal grid in background
+    ax.yaxis.grid(True)
+    fig = ax.get_figure()
+    fig.tight_layout()
+    fig.savefig(osp.join(res_dir, "barplot.png"))
+    ax.clear()
+    
+    exit(0)
 
     ########################################################################################################
 
