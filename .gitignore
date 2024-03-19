@@ -1,4 +1,8 @@
 *__pycache__*
 data
 old
+*.csv
+*.png
 *.pvsm
+*.xdmf
+*.h5
