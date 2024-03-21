@@ -27,7 +27,7 @@ def process(
     indicators = []
 
     try:
-        xdmf_file_annex = XDMF_Wrapper(osp.join(data_dir, case, f"Resultats_MESH_{id}", "ConvectiveVelocity.xdmf")) # VitesseConvection & DisplacementF
+        xdmf_file_annex = XDMF_Wrapper(osp.join(data_dir, case, f"Resultats_MESH_{id}", "ConvectiveVelocity.xdmf"))
         xdmf_file_annex.update_time_step(0)
         displacement0 = xdmf_file_annex.get_point_field('DisplacementF')
     except:
