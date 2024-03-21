@@ -5,7 +5,7 @@ import numpy as np
 from utils.xdmf import XDMF_Wrapper
 from utils.points import min_max, mean_std, split_vessels_aneurysm, extract_surface_points, WSS_regions
 from utils.triangles import surface_area, extract_surface_cells, aneurysm_cells, WSS_regions_cells, positive_v_y_cells
-from utils.tetra import slice_tetra, volume_region
+from utils.tetra import clip_tetra, volume_region
 from utils.integrate import integrate_field_surface, integrate_field_volume
 
 def compute_redundant_first(
@@ -19,7 +19,8 @@ def compute_redundant_first(
     WSS = xdmf_file.get_point_field('WSS')
     vessels, aneurysm, aneurysm_indicator = split_vessels_aneurysm(xdmf_file.get_points(), orifice_origin, orifice_plane)
     aneurysm_surface_points = extract_surface_points(WSS, aneurysm)
-    aneurysm_tetra, vessels_tetra = slice_tetra(xdmf_file.get_points(), xdmf_file.get_cells(), orifice_origin, orifice_plane)
+    aneurysm_tetra, vessels_tetra = clip_tetra(xdmf_file.get_points(), xdmf_file.get_cells(), orifice_origin, orifice_plane)
+
     surface_cells = extract_surface_cells(xdmf_file.get_cells(), WSS)
     aneurysm_surface_cells, _ = aneurysm_cells(surface_cells, aneurysm_indicator)
     V_a = volume_region(xdmf_file.get_points(), aneurysm_tetra)
@@ -81,10 +82,10 @@ def tawss(
     """
     Compute the min, max, mean and std OSI values in the aneurysm.
     """
-#     TAWSS = xdmf_file.get_point_field('TAWSS')
-#     min_tawss_aneurysm, max_tawss_aneurysm = min_max(TAWSS[aneurysm_surface_points])
-#     mean_tawss_aneurysm, std_tawss_aneurysm = mean_std(TAWSS[aneurysm_surface_points])
-    return 0, 0, 0, 0 # min_tawss_aneurysm, max_tawss_aneurysm, mean_tawss_aneurysm, std_tawss_aneurysm
+    TAWSS = xdmf_file.get_point_field('TAWSS')
+    min_tawss_aneurysm, max_tawss_aneurysm = min_max(TAWSS[aneurysm_surface_points])
+    mean_tawss_aneurysm, std_tawss_aneurysm = mean_std(TAWSS[aneurysm_surface_points])
+    return min_tawss_aneurysm, max_tawss_aneurysm, mean_tawss_aneurysm, std_tawss_aneurysm
 
 def compute_KER(
         xdmf_file: XDMF_Wrapper,
@@ -136,16 +137,16 @@ def compute_LSA(
 def compute_SCI(
         xdmf_file: XDMF_Wrapper,
         aneurysm_surface_cells: np.ndarray,
-        WSS_high_cells: np.ndarray,
-        HSA: float
+        WSS_low_cells: np.ndarray,
+        LSA: float
 ) -> float:
     """
     Compute the integrals of the WSS in the aneurysm and vessels
     """
     WSS = xdmf_file.get_point_field('WSS')
     F_a = integrate_field_surface(aneurysm_surface_cells, xdmf_file.get_points(), WSS)    
-    F_h = integrate_field_surface(WSS_high_cells, xdmf_file.get_points(), WSS)
-    SCI = (F_h/F_a)/HSA
+    F_l = integrate_field_surface(WSS_low_cells, xdmf_file.get_points(), WSS)
+    SCI = (F_l/F_a)/LSA
     return SCI
 
 def compute_ICI(
@@ -199,6 +200,6 @@ def compute_indicators(
     
     # Compute second indicators
     LSA, HSA = compute_LSA(xdmf_file, aneurysm_surface_cells, WSS_low_cells, WSS_high_cells)
-    SCI = compute_SCI(xdmf_file, aneurysm_surface_cells, WSS_high_cells, HSA)
+    SCI = compute_SCI(xdmf_file, aneurysm_surface_cells, WSS_low_cells, LSA)
 
     return [min_wss, max_wss, min_wss_aneurysm, max_wss_aneurysm, min_wss_vessels, max_wss_vessels, mean_wss, std_wss, mean_wss_aneurysm, std_wss_aneurysm, mean_wss_vessels, std_wss_vessels, min_osi_aneurysm, max_osi_aneurysm, mean_osi_aneurysm, std_osi_aneurysm, min_tawss_aneurysm, max_tawss_aneurysm, mean_tawss_aneurysm, std_tawss_aneurysm, KER, VDR, LSA, HSA, SCI, ICI]

@@ -41,7 +41,7 @@ def volume_region(
     """
     return tetra_volume(points[cells])
 
-def slice_tetra(
+def clip_tetra(
         points: np.ndarray,
         cells: np.ndarray,
         origin: Union[List[float], np.ndarray],

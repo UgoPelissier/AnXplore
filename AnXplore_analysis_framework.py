@@ -7,6 +7,8 @@ from alive_progress import alive_bar
 from utils.xdmf import XDMF_Wrapper
 from utils.indicators import compute_indicators
 
+import multiprocessing
+
 def process(
         data_dir: str,
         res_dir: str,
@@ -21,12 +23,13 @@ def process(
     """
     Compute the indicators for a given XDMF file.
     """
-    xdmf_file = XDMF_Wrapper(osp.join(data_dir, case, f"{id}.xdmf"))  
+    xdmf_file = XDMF_Wrapper(osp.join(data_dir, case, f"Resultats_MESH_{id}", "AllFields.xdmf"))
     indicators = []
 
     # Compute indicators over a cardiac cycle
     time_steps = xdmf_file.get_time_steps()
-    for t in time_steps[-T_cardiac_cycle:]:
+    for t in time_steps:
+        print (f"Processing - id {id} - time step {t}")
         xdmf_file.update_time_step(t)
         indicators.append(compute_indicators(xdmf_file, vessel_in_out_origin, vessel_in_out_plane, orifice_origin, orifice_plane))
 
@@ -45,17 +48,22 @@ def process(
         header="min_wss max_wss min_wss_aneurysm max_wss_aneurysm min_wss_vessels max_wss_vessels mean_wss std_wss mean_wss_aneurysm std_wss_aneurysm mean_wss_vessels std_wss_vessels min_osi_aneurysm max_osi_aneurysm mean_osi_aneurysm std_osi_aneurysm min_tawss_aneurysm max_tawss_aneurysm mean_tawss_aneurysm std_tawss_aneurysm KER VDR LSA HSA SCI ICI",
         comments=''
     )
+    print(f"Done processing case {case} - id {id}")
 
 if __name__ == '__main__':
 
-    data_dir = "data"
-    yy = ['53', '54', '57', '60']
-    yyv = [5.3, 5.4, 5.7, 6.0]
+    data_dir = "/media/admin-upelissier/DATA"
+    yy = ['78', '80', '82']
+    yyv = [7.8, 8.0, 8.2]
     cases = ['rigid', 'fsi']
+
+    start = 0
+    end = 106
+    exclude = 85
 
     for y, yv in zip(yy, yyv):
 
-        res_dir = osp.join("res", "csv", "baseline", y)
+        res_dir = osp.join("res", "csv", y)
         os.makedirs(res_dir, exist_ok=True)
 
         vessel_in_out_origin = [0.0, 0.001, 0.0]
@@ -64,15 +72,17 @@ if __name__ == '__main__':
         orifice_origin = [0.0, yv, 0.0]
         orifice_plane = [0.0, 1.0, 0.0]
 
-        T_cardiac_cycle = 20
+        T_cardiac_cycle = 80
 
         for case in cases:
             os.makedirs(osp.join(res_dir, case), exist_ok=True)
-            filenames = glob.glob(osp.join(data_dir, case, "*.xdmf"))
-            ids = [filenames[i][len(osp.join(data_dir, case))+1:-5] for i in range(len(filenames))]
-
-            with alive_bar(len(ids), title=f"Computing indicators for {y} - {case} case") as bar:
-                for i, id in enumerate(ids):
+            ids = [i for i in range(start, end) if i != exclude]
+            with alive_bar(len(ids), title=f"Computing indicators for y={yv} - {case} case") as bar:
+                for id in ids:
                     process(data_dir, res_dir, case, id, vessel_in_out_origin, vessel_in_out_plane, orifice_origin, orifice_plane, T_cardiac_cycle)
                     bar()
             print("Done.")
+
+
+    
+    

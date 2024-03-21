@@ -80,6 +80,6 @@ def WSS_regions(
     """
     Compute the WSS regions.
     """
-    low = 1*(wss<mean_wss_vessels-std_wss_vessels)
-    high = 1*(wss>mean_wss_vessels+std_wss_vessels)
+    low = 1*(wss<(mean_wss_vessels-std_wss_vessels))
+    high = 1*(wss>(mean_wss_vessels+std_wss_vessels))
     return high-low

@@ -30,11 +30,12 @@ class XDMF_Wrapper(object):
         """
         Get the cells of the mesh.
         """
-        data = vtk_to_numpy(self.xdmf_data.GetOutput().GetBlock(0).GetCells().GetData())
-        offsets = vtk_to_numpy(self.xdmf_data.GetOutput().GetBlock(0).GetCellLocationsArray())
-        types = vtk_to_numpy(self.xdmf_data.GetOutput().GetBlock(0).GetCellTypesArray())
-
-        cells = (data[:4*types.shape[0]]).reshape(-1,4)
+        nCells = self.xdmf_data.GetOutput().GetBlock(0).GetNumberOfCells()
+        cells = np.zeros((nCells, 4), dtype=int)
+        for i in range(nCells):
+            cell = self.xdmf_data.GetOutput().GetBlock(0).GetCell(i)
+            for j in range(4):
+                cells[i,j] = cell.GetPointId(j)
         return cells
 
     def get_time_steps(self):
@@ -42,6 +43,12 @@ class XDMF_Wrapper(object):
         Get the number of time steps.
         """
         return self.xdmf_data.GetOutputInformation(0).Get(vtk.vtkCompositeDataPipeline.TIME_STEPS())
+    
+    def get_field_list(self) -> list[str]:
+        """
+        Get the list of fields.
+        """
+        return [self.xdmf_data.GetOutput().GetBlock(0).GetPointData().GetArrayName(i) for i in range(self.xdmf_data.GetOutput().GetBlock(0).GetPointData().GetNumberOfArrays())]
     
     def get_point_field(self, field: str) -> np.ndarray:
         """
@@ -149,6 +156,12 @@ class XDMF_Wrapper(object):
         """
         strain_rate = self.compute_strain_rate()
         mu = self.xdmf_data.GetOutput().GetBlock(0).GetPointData().GetArray("mu")
-        mu = vtk_to_numpy(mu)
+        # If mu is not none
+        if mu:
+            mu = vtk_to_numpy(mu)
+            viscous_dissipation = mu*strain_rate
+            return viscous_dissipation
+        # If mu is none
+        mu = 0.0032*np.ones(len(strain_rate))
         viscous_dissipation = mu*strain_rate
         return viscous_dissipation
