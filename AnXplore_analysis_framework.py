@@ -3,11 +3,10 @@ import os
 import os.path as osp
 import numpy as np
 from alive_progress import alive_bar
+from multiprocessing import Pool
 
 from utils.xdmf import XDMF_Wrapper
 from utils.indicators import compute_indicators
-
-import multiprocessing
 
 def process(
         data_dir: str,
@@ -23,15 +22,26 @@ def process(
     """
     Compute the indicators for a given XDMF file.
     """
+    print (f"Processing case {case} - id {id}")
     xdmf_file = XDMF_Wrapper(osp.join(data_dir, case, f"Resultats_MESH_{id}", "AllFields.xdmf"))
     indicators = []
+
+    try:
+        xdmf_file_annex = XDMF_Wrapper(osp.join(data_dir, case, f"Resultats_MESH_{id}", "ConvectiveVelocity.xdmf")) # VitesseConvection & DisplacementF
+        xdmf_file_annex.update_time_step(0)
+        displacement0 = xdmf_file_annex.get_point_field('DisplacementF')
+    except:
+        xdmf_file_annex = None
+        displacement0 = None
 
     # Compute indicators over a cardiac cycle
     time_steps = xdmf_file.get_time_steps()
     for t in time_steps:
         print (f"Processing - id {id} - time step {t}")
         xdmf_file.update_time_step(t)
-        indicators.append(compute_indicators(xdmf_file, vessel_in_out_origin, vessel_in_out_plane, orifice_origin, orifice_plane))
+        if xdmf_file_annex is not None:
+            xdmf_file_annex.update_time_step(10*t)
+        indicators.append(compute_indicators(xdmf_file, xdmf_file_annex, displacement0, vessel_in_out_origin, vessel_in_out_plane, orifice_origin, orifice_plane))
 
     # Compute min, max and mean over the cardiac cycle
     indicators = np.array(indicators)
@@ -50,39 +60,44 @@ def process(
     )
     print(f"Done processing case {case} - id {id}")
 
-if __name__ == '__main__':
+def process_case(args):
+    id, data_dir, res_dir, case, vessel_in_out_origin, vessel_in_out_plane, orifice_origin, orifice_plane, T_cardiac_cycle = args
+    process(data_dir, res_dir, case, id, vessel_in_out_origin, vessel_in_out_plane, orifice_origin, orifice_plane, T_cardiac_cycle)
 
+def main(parallel):
     data_dir = "/media/admin-upelissier/DATA"
     yy = ['78', '80', '82']
     yyv = [7.8, 8.0, 8.2]
-    cases = ['rigid', 'fsi']
-
+    cases = ['rigid']
     start = 0
     end = 106
     exclude = 85
+    if parallel:
+        pool = Pool(processes=16)
 
     for y, yv in zip(yy, yyv):
-
         res_dir = osp.join("res", "csv", y)
         os.makedirs(res_dir, exist_ok=True)
-
         vessel_in_out_origin = [0.0, 0.001, 0.0]
         vessel_in_out_plane = [0.0, 1.0, 0.0]
-
         orifice_origin = [0.0, yv, 0.0]
         orifice_plane = [0.0, 1.0, 0.0]
-
         T_cardiac_cycle = 80
 
         for case in cases:
             os.makedirs(osp.join(res_dir, case), exist_ok=True)
             ids = [i for i in range(start, end) if i != exclude]
-            with alive_bar(len(ids), title=f"Computing indicators for y={yv} - {case} case") as bar:
-                for id in ids:
-                    process(data_dir, res_dir, case, id, vessel_in_out_origin, vessel_in_out_plane, orifice_origin, orifice_plane, T_cardiac_cycle)
-                    bar()
-            print("Done.")
 
+            if parallel:
+                args_list = [(id, data_dir, res_dir, case, vessel_in_out_origin, vessel_in_out_plane, orifice_origin, orifice_plane, T_cardiac_cycle) for id in ids]
+                pool.map(process_case, args_list)
+            else:
+                with alive_bar(len(ids), title=f"Computing indicators for y={yv} - {case} case") as bar:
+                    for id in ids:
+                        process(data_dir, res_dir, case, id, vessel_in_out_origin, vessel_in_out_plane, orifice_origin, orifice_plane, T_cardiac_cycle)
+                        bar()
+                print("Done.")
 
-    
-    
+if __name__ == '__main__':
+    parallel = True
+    main(parallel)

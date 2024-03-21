@@ -20,11 +20,14 @@ class XDMF_Wrapper(object):
         self.xdmf_data = xdmf_data
         self.tetra_id = 10
 
-    def get_points(self) -> np.ndarray:
+    def get_points(self, displacement: np.ndarray, displacement0: np.ndarray) -> np.ndarray:
         """
         Get the points of the mesh.
         """
-        return vtk_to_numpy(self.xdmf_data.GetOutput().GetBlock(0).GetPoints().GetData())
+        points =  vtk_to_numpy(self.xdmf_data.GetOutput().GetBlock(0).GetPoints().GetData())
+        if displacement is not None and displacement0 is not None:
+            points += displacement - displacement0
+        return points
 
     def get_cells(self) -> np.ndarray:
         """
