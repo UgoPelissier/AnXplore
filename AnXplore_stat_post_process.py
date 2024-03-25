@@ -10,18 +10,20 @@ from scipy import stats
 if __name__ == '__main__':
 
     res_dir = "res"
-    ys = ['53', '54', '57', '60']
+    ys = ['80']
     cases = ['rigid', 'fsi']
 
-    os.makedirs(osp.join(res_dir), exist_ok=True)
-    os.makedirs(osp.join(res_dir, "violin"), exist_ok=True)
-    os.makedirs(osp.join(res_dir, "violin", "baseline"), exist_ok=True)
-    os.makedirs(osp.join(res_dir, "violin", "hd"), exist_ok=True)
+    # os.makedirs(osp.join(res_dir), exist_ok=True)
+    # os.makedirs(osp.join(res_dir, "violin"), exist_ok=True)
+    # os.makedirs(osp.join(res_dir, "violin", "baseline"), exist_ok=True)
+    # os.makedirs(osp.join(res_dir, "violin", "hd"), exist_ok=True)
 
+    mean_velocity_aneurysm = [[] for _ in range(len(ys))]
+    weighted_mean_WSS = [[] for _ in range(len(ys))]
     min_wss_aneurysm = [[] for _ in range(len(ys))]
     max_wss_aneurysm = [[] for _ in range(len(ys))]
     mean_wss_aneurysm = [[] for _ in range(len(ys))]
-    min_osi_aneurysm = [[] for _ in range(len(ys))]
+    # min_osi_aneurysm = [[] for _ in range(len(ys))]
     max_osi_aneurysm = [[] for _ in range(len(ys))]
     mean_osi_aneurysm = [[] for _ in range(len(ys))]
     min_tawss_aneurysm = [[] for _ in range(len(ys))]
@@ -36,14 +38,16 @@ if __name__ == '__main__':
 
     for (i, y) in enumerate(ys):
         for case in cases:
-            filenames = glob.glob(osp.join(res_dir, "csv", "baseline", y, case, "*.csv"))
-            with alive_bar(len(filenames), title=f"Extracting indicators for {y} - {case} case") as bar:
+            filenames = glob.glob(osp.join(res_dir, "csv", y, case, "*.csv"))
+            with alive_bar(len(filenames), title=f"Extracting indicators for {y} - Case {case}") as bar:
                 for filename in filenames:
                     df = pd.read_csv(filename, sep=' ')
+                    mean_velocity_aneurysm[i] += df['mean_velocity_aneurysm'].tolist()[:-4]
+                    weighted_mean_WSS[i] += df['weighted_mean_WSS'].tolist()[:-4]
                     min_wss_aneurysm[i] += df['min_wss_aneurysm'].tolist()[:-4]
                     max_wss_aneurysm[i] += df['max_wss_aneurysm'].tolist()[:-4]
                     mean_wss_aneurysm[i] += df['mean_wss_aneurysm'].tolist()[:-4]
-                    min_osi_aneurysm[i] += df['min_osi_aneurysm'].tolist()[-5:-4]
+                    # min_osi_aneurysm[i] += df['min_osi_aneurysm'].tolist()[-5:-4]
                     max_osi_aneurysm[i] += df['max_osi_aneurysm'].tolist()[-5:-4]
                     mean_osi_aneurysm[i] += df['mean_osi_aneurysm'].tolist()[-5:-4]
                     min_tawss_aneurysm[i] += df['min_tawss_aneurysm'].tolist()[-5:-4]
@@ -59,10 +63,12 @@ if __name__ == '__main__':
         print("Done.")
 
     indicators = {
+        'mean_velocity_aneurysm': mean_velocity_aneurysm,
+        'weighted_mean_WSS': weighted_mean_WSS,
         'min_wss_aneurysm': min_wss_aneurysm,
         'max_wss_aneurysm': max_wss_aneurysm,
         'mean_wss_aneurysm': mean_wss_aneurysm,
-        'min_osi_aneurysm': min_osi_aneurysm,
+        # 'min_osi_aneurysm': min_osi_aneurysm,
         'max_osi_aneurysm': max_osi_aneurysm,
         'mean_osi_aneurysm': mean_osi_aneurysm,
         'min_tawss_aneurysm': min_tawss_aneurysm,
@@ -76,7 +82,7 @@ if __name__ == '__main__':
         'ICI': ICI,
     }
 
-    titles = ['$WSS_{min}$', '$WSS_{max}$', '$WSS_{mean}$', '$OSI_{min}$', '$OSI_{max}$', '$OSI_{mean}$', '$TAWSS_{min}$', '$TAWSS_{max}$', '$TAWSS_{mean}$', 'KER', 'VDR', 'LSA', 'HSA', 'SCI', 'ICI']
+    titles = ['$\overline{v}_{a}$', '$\overline{WSS}$', '$WSS_{min}$', '$WSS_{max}$', '$WSS_{mean}$', '$OSI_{max}$', '$OSI_{mean}$', '$TAWSS_{min}$', '$TAWSS_{max}$', '$TAWSS_{mean}$', 'KER', 'VDR', 'LSA', 'HSA', 'SCI', 'ICI'] # '$\overline{v}_{a}$', '$\overline{WSS}$', '$OSI_{min}$'
 
     means = [{} for _ in range(len(ys))]
     os.makedirs(osp.join(res_dir, "pvalues"), exist_ok=True)
