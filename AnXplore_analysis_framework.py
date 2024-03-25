@@ -22,7 +22,7 @@ def process(
     """
     Compute the indicators for a given XDMF file.
     """
-    print (f"Processing case {case} - id {id}")
+    print (f"Processing {case} - id {id}")
     xdmf_file = XDMF_Wrapper(osp.join(data_dir, case, f"Resultats_MESH_{id}", "AllFields.xdmf"))
     indicators = []
 
@@ -37,7 +37,7 @@ def process(
     # Compute indicators over a cardiac cycle
     time_steps = xdmf_file.get_time_steps()
     for t in time_steps:
-        print (f"Processing - id {id} - time step {t}")
+        print (f"Processing {case} - id {id} - time step {t}")
         xdmf_file.update_time_step(t)
         if xdmf_file_annex is not None:
             xdmf_file_annex.update_time_step(10*t)
@@ -55,7 +55,7 @@ def process(
         fname=osp.join(res_dir, case, f"{id}.csv"),
         X=np.array(indicators),
         fmt="%.10f",
-        header="min_wss max_wss min_wss_aneurysm max_wss_aneurysm min_wss_vessels max_wss_vessels mean_wss std_wss mean_wss_aneurysm std_wss_aneurysm mean_wss_vessels std_wss_vessels min_osi_aneurysm max_osi_aneurysm mean_osi_aneurysm std_osi_aneurysm min_tawss_aneurysm max_tawss_aneurysm mean_tawss_aneurysm std_tawss_aneurysm KER VDR LSA HSA SCI ICI",
+        header="mean_velocity_aneurysm weighted_mean_WSS min_wss max_wss min_wss_aneurysm max_wss_aneurysm min_wss_vessels max_wss_vessels mean_wss std_wss mean_wss_aneurysm std_wss_aneurysm mean_wss_vessels std_wss_vessels min_osi_aneurysm max_osi_aneurysm mean_osi_aneurysm std_osi_aneurysm min_tawss_aneurysm max_tawss_aneurysm mean_tawss_aneurysm std_tawss_aneurysm KER VDR LSA HSA SCI ICI",
         comments=''
     )
     print(f"Done processing case {case} - id {id}")
@@ -66,14 +66,17 @@ def process_case(args):
 
 def main(parallel):
     data_dir = "/media/admin-upelissier/DATA"
-    yy = ['78', '80', '82']
-    yyv = [7.8, 8.0, 8.2]
-    cases = ['rigid']
+    yy = ['80']
+    yyv = [8.0]
+    cases = ['rigid', 'fsi']
     start = 0
     end = 106
     exclude = 85
+    ids = [i for i in range(start, end) if i != exclude]
+
     if parallel:
         pool = Pool(processes=16)
+        args_list = []
 
     for y, yv in zip(yy, yyv):
         res_dir = osp.join("res", "csv", y)
@@ -86,11 +89,8 @@ def main(parallel):
 
         for case in cases:
             os.makedirs(osp.join(res_dir, case), exist_ok=True)
-            ids = [i for i in range(start, end) if i != exclude]
-
             if parallel:
-                args_list = [(id, data_dir, res_dir, case, vessel_in_out_origin, vessel_in_out_plane, orifice_origin, orifice_plane, T_cardiac_cycle) for id in ids]
-                pool.map(process_case, args_list)
+                args_list += [(id, data_dir, res_dir, case, vessel_in_out_origin, vessel_in_out_plane, orifice_origin, orifice_plane, T_cardiac_cycle) for id in ids]
             else:
                 with alive_bar(len(ids), title=f"Computing indicators for y={yv} - {case} case") as bar:
                     for id in ids:
@@ -98,6 +98,12 @@ def main(parallel):
                         bar()
                 print("Done.")
 
+    if parallel:
+        pool.map(process_case, args_list)
+        pool.close()
+        pool.join()
+        print("Done.")
+
 if __name__ == '__main__':
-    parallel = True
+    parallel = False
     main(parallel)
