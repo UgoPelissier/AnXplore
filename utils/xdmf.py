@@ -165,6 +165,6 @@ class XDMF_Wrapper(object):
             viscous_dissipation = mu*strain_rate
             return viscous_dissipation
         # If mu is none
-        mu = 0.0032*np.ones(len(strain_rate))
+        mu = 0.004*np.ones(len(strain_rate))
         viscous_dissipation = mu*strain_rate
         return viscous_dissipation
