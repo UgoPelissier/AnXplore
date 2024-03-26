@@ -69,6 +69,9 @@ def main(parallel):
     exclude = [33, 85]
     ids = [i for i in range(start, end) if i not in exclude]
 
+    os.makedirs("res", exist_ok=True)
+    os.makedirs(osp.join("res", "csv"), exist_ok=True)
+
     if parallel:
         pool = Pool(processes=16)
         args_list = []
