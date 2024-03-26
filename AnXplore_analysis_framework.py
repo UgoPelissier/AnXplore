@@ -40,7 +40,7 @@ def process(
         print (f"Processing {case} - id {id} - time step {t}")
         xdmf_file.update_time_step(t)
         if xdmf_file_annex is not None:
-            xdmf_file_annex.update_time_step(10*t)
+            xdmf_file_annex.update_time_step(10*t+9)
         indicators.append(compute_indicators(xdmf_file, xdmf_file_annex, displacement0, vessel_in_out_origin, vessel_in_out_plane, orifice_origin, orifice_plane))
 
     # Compute min, max and mean over the cardiac cycle
