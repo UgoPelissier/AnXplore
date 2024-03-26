@@ -147,8 +147,7 @@ class XDMF_Wrapper(object):
         Compute the strain rate tensor.
         """
         grad_u = self.compute_vector_derivatives(field="Vitesse")
-        strain_rate = 2*abs(grad_u + grad_u.transpose(0, 2, 1))
-        strain_rate = np.array([np.sum(strain_rate[i,:,:]) for i in range(len(strain_rate))])
+        strain_rate = np.sqrt(2*grad_u[:,0,0]**2 + 2*grad_u[:,1,1]**2 + 2*grad_u[:,2,2]**2 + (grad_u[:,0,1] + grad_u[:,1,0])**2 + (grad_u[:,0,2] + grad_u[:,2,0])**2 + (grad_u[:,1,2] + grad_u[:,2,1])**2)
         return strain_rate
     
     def compute_viscous_dissipation(
@@ -166,5 +165,5 @@ class XDMF_Wrapper(object):
             return viscous_dissipation
         # If mu is none
         mu = 0.004*np.ones(len(strain_rate))
-        viscous_dissipation = mu*strain_rate
+        viscous_dissipation = mu*strain_rate/2
         return viscous_dissipation

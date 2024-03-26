@@ -31,4 +31,5 @@ def clip_tetra(
     """
     Return the cells cut by a plane.
     """
-    return cells[np.nonzero(1*(np.sum(1*(np.dot(points-origin, normal)>0)[cells], axis=1)==4))[0]], cells[np.nonzero(1*(np.sum(1*(np.dot(points-origin, normal)>0)[cells], axis=1)==0))[0]]
+    nb_points_in_threshold = 3
+    return cells[np.nonzero(1*(np.sum(1*(np.dot(points-origin, normal)>0)[cells], axis=1)>=nb_points_in_threshold))[0]], cells[np.nonzero(1*(np.sum(1*(np.dot(points-origin, normal)>0)[cells], axis=1)<nb_points_in_threshold))[0]]

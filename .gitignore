@@ -6,3 +6,4 @@ old
 *.pvsm
 *.xdmf
 *.h5
+*.log

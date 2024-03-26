@@ -45,17 +45,12 @@ def process(
 
     # Compute min, max and mean over the cardiac cycle
     indicators = np.array(indicators)
-    min = np.min(indicators, axis=0)
-    max = np.max(indicators, axis=0)
-    mean = np.mean(indicators, axis=0)
-    std = np.std(indicators, axis=0)
-    indicators = np.concatenate((indicators, min.reshape((1,-1)), max.reshape((1,-1)), mean.reshape((1,-1)), std.reshape((1,-1))))
 
     np.savetxt(
         fname=osp.join(res_dir, case, f"{id}.csv"),
         X=np.array(indicators),
         fmt="%.10f",
-        header="mean_velocity_aneurysm weighted_mean_WSS min_wss max_wss min_wss_aneurysm max_wss_aneurysm min_wss_vessels max_wss_vessels mean_wss std_wss mean_wss_aneurysm std_wss_aneurysm mean_wss_vessels std_wss_vessels min_osi_aneurysm max_osi_aneurysm mean_osi_aneurysm std_osi_aneurysm min_tawss_aneurysm max_tawss_aneurysm mean_tawss_aneurysm std_tawss_aneurysm KER VDR LSA HSA SCI ICI",
+        header="mean_velocity_aneurysm mean_wss_aneurysm min_wss_aneurysm max_wss_aneurysm mean_wss_aneurysm_pw std_wss_aneurysm_pw mean_osi_aneurysm min_osi_aneurysm max_osi_aneurysm mean_osi_aneurysm_pw std_osi_aneurysm_pw mean_tawss_aneurysm min_tawss_aneurysm max_tawss_aneurysm mean_tawss_aneurysm_pw std_tawss_aneurysm_pw KER VDR LSA HSA SCI ICI",
         comments=''
     )
     print(f"Done processing case {case} - id {id}")
@@ -66,13 +61,13 @@ def process_case(args):
 
 def main(parallel):
     data_dir = "/media/admin-upelissier/DATA"
-    yy = ['80']
-    yyv = [8.0]
+    yy = ['78']
+    yyv = [7.8]
     cases = ['rigid', 'fsi']
     start = 0
     end = 106
-    exclude = 85
-    ids = [i for i in range(start, end) if i != exclude]
+    exclude = [33, 85]
+    ids = [i for i in range(start, end) if i not in exclude]
 
     if parallel:
         pool = Pool(processes=16)
