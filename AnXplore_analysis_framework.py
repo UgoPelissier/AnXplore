@@ -61,12 +61,12 @@ def process_case(args):
 
 def main(parallel):
     data_dir = "/media/admin-upelissier/DATA"
-    yy = ['78']
-    yyv = [7.8]
+    yy = ['79']
+    yyv = [7.9]
     cases = ['rigid', 'fsi']
     start = 0
     end = 106
-    exclude = [33, 85]
+    exclude = [85]
     ids = [i for i in range(start, end) if i not in exclude]
 
     os.makedirs("res", exist_ok=True)

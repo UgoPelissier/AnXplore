@@ -1,4 +1,4 @@
-name: cimlib
+name: anxplore
 channels:
   - defaults
 dependencies:
@@ -59,4 +59,4 @@ dependencies:
       - tzdata==2023.3
       - vtk==9.2.6
       - zipp==3.17.0
-prefix: /home/admin-upelissier/anaconda3/envs/cimlib
+prefix: /home/admin-upelissier/anaconda3/envs/anxplore
