@@ -200,6 +200,7 @@ def compute_ICI(
 def compute_indicators(
         xdmf_file: XDMF_Wrapper,
         xdmf_file_annex: XDMF_Wrapper,
+        t: float,
         displacement0: np.ndarray,
         vessel_in_out_origin: list[float],
         vessel_in_out_plane: list[float],
@@ -233,4 +234,4 @@ def compute_indicators(
     LSA, HSA = compute_LSA(points, aneurysm_area, WSS_low_cells, WSS_high_cells)
     SCI = compute_SCI(points, WSS, aneurysm_surface_cells, WSS_high_cells, HSA)
 
-    return [mean_velocity_aneurysm, mean_wss_aneurysm, min_wss_aneurysm, max_wss_aneurysm, mean_wss_aneurysm_pw, std_wss_aneurysm_pw, mean_osi_aneurysm, min_osi_aneurysm, max_osi_aneurysm, mean_osi_aneurysm_pw, std_osi_aneurysm_pw, mean_tawss_aneurysm, min_tawss_aneurysm, max_tawss_aneurysm, mean_tawss_aneurysm_pw, std_tawss_aneurysm_pw, KER, VDR, LSA, HSA, SCI, ICI]
+    return [t, mean_velocity_aneurysm, mean_wss_aneurysm, min_wss_aneurysm, max_wss_aneurysm, mean_wss_aneurysm_pw, std_wss_aneurysm_pw, mean_osi_aneurysm, min_osi_aneurysm, max_osi_aneurysm, mean_osi_aneurysm_pw, std_osi_aneurysm_pw, mean_tawss_aneurysm, min_tawss_aneurysm, max_tawss_aneurysm, mean_tawss_aneurysm_pw, std_tawss_aneurysm_pw, KER, VDR, LSA, HSA, SCI, ICI]

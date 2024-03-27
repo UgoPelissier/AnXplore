@@ -41,7 +41,7 @@ def process(
         xdmf_file.update_time_step(t)
         if xdmf_file_annex is not None:
             xdmf_file_annex.update_time_step(10*t+9)
-        indicators.append(compute_indicators(xdmf_file, xdmf_file_annex, displacement0, vessel_in_out_origin, vessel_in_out_plane, orifice_origin, orifice_plane))
+        indicators.append(compute_indicators(xdmf_file, xdmf_file_annex, t, displacement0, vessel_in_out_origin, vessel_in_out_plane, orifice_origin, orifice_plane))
 
     # Compute min, max and mean over the cardiac cycle
     indicators = np.array(indicators)
@@ -50,7 +50,7 @@ def process(
         fname=osp.join(res_dir, case, f"{id}.csv"),
         X=np.array(indicators),
         fmt="%.10f",
-        header="mean_velocity_aneurysm mean_wss_aneurysm min_wss_aneurysm max_wss_aneurysm mean_wss_aneurysm_pw std_wss_aneurysm_pw mean_osi_aneurysm min_osi_aneurysm max_osi_aneurysm mean_osi_aneurysm_pw std_osi_aneurysm_pw mean_tawss_aneurysm min_tawss_aneurysm max_tawss_aneurysm mean_tawss_aneurysm_pw std_tawss_aneurysm_pw KER VDR LSA HSA SCI ICI",
+        header="time mean_velocity_aneurysm mean_wss_aneurysm min_wss_aneurysm max_wss_aneurysm mean_wss_aneurysm_pw std_wss_aneurysm_pw mean_osi_aneurysm min_osi_aneurysm max_osi_aneurysm mean_osi_aneurysm_pw std_osi_aneurysm_pw mean_tawss_aneurysm min_tawss_aneurysm max_tawss_aneurysm mean_tawss_aneurysm_pw std_tawss_aneurysm_pw KER VDR LSA HSA SCI ICI",
         comments=''
     )
     print(f"Done processing case {case} - id {id}")
@@ -61,8 +61,8 @@ def process_case(args):
 
 def main(parallel):
     data_dir = "/media/admin-upelissier/DATA"
-    yy = ['79']
-    yyv = [7.9]
+    yy = ['79', '80', '81']
+    yyv = [7.9, 8.0, 8.1]
     cases = ['rigid', 'fsi']
     start = 0
     end = 106
@@ -103,5 +103,5 @@ def main(parallel):
         print("Done.")
 
 if __name__ == '__main__':
-    parallel = False
+    parallel = True
     main(parallel)
